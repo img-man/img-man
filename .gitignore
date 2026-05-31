@@ -1,0 +1,78 @@
+# See https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files for details.
+# This repository is the public img-man core. Real credentials, hosted-service
+# deployment config, and private overlays belong outside this repo.
+
+# Dependencies / package managers
+/node_modules
+/.pnp
+.pnp.*
+.pnpm-store/
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# Build / cache outputs
+/.next/
+/out/
+/build
+/dist
+/packages/*/dist/
+.turbo/
+.cache/
+.eslintcache
+*.tsbuildinfo
+
+# Runtime / generated files
+/.tmp/
+/tmp/
+/temp/
+/data/
+/.generated/
+*.pid
+*.pid.lock
+build-output.txt
+
+# Logs / reports
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+sbom.cdx.json
+eval-results.json
+migration-stress-results.json
+mcp-publish-eval-results.json
+roadmap-blockers.json
+gitleaks-report*.json
+trufflehog-report*.json
+
+# Env files
+.env
+.env.*
+!.env.example
+!.env*.example
+
+# Credentials - never commit real secrets
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.cer
+*service-account*.json
+*gcp-service-account*.json
+*credentials*.json
+keys.json
+gcloud.json
+/secrets/
+/extra/
+
+# Editor / OS state
+.DS_Store
+/.vscode/
+.idea/
+.zed/
+*.code-workspace
+.history/

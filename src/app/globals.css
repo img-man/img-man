@@ -1,0 +1,248 @@
+:root {
+  color-scheme: light dark;
+  --bg: #f5efe7;
+  --bg-accent: rgba(233, 120, 44, 0.18);
+  --bg-accent-2: rgba(24, 125, 136, 0.16);
+  --panel: rgba(255, 252, 247, 0.72);
+  --panel-border: rgba(31, 22, 16, 0.1);
+  --text: #17110d;
+  --muted: #65584f;
+  --accent: #c44a1a;
+  --accent-strong: #9d3610;
+  --accent-soft: #fff0e8;
+  --shadow: 0 20px 60px rgba(85, 55, 30, 0.12);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #100d0c;
+    --bg-accent: rgba(233, 120, 44, 0.2);
+    --bg-accent-2: rgba(51, 173, 169, 0.2);
+    --panel: rgba(25, 21, 19, 0.78);
+    --panel-border: rgba(255, 239, 228, 0.08);
+    --text: #f7efe9;
+    --muted: #c8b7ac;
+    --accent: #ff8b4b;
+    --accent-strong: #ffb36c;
+    --accent-soft: rgba(255, 139, 75, 0.14);
+    --shadow: 0 28px 80px rgba(0, 0, 0, 0.32);
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  color: var(--text);
+  background:
+    radial-gradient(circle at top left, var(--bg-accent), transparent 28%),
+    radial-gradient(circle at right 20%, var(--bg-accent-2), transparent 24%),
+    linear-gradient(180deg, var(--bg), color-mix(in srgb, var(--bg) 72%, #ffffff 28%));
+}
+
+body::before,
+body::after {
+  content: '';
+  position: fixed;
+  inset: auto;
+  width: 18rem;
+  height: 18rem;
+  border-radius: 999px;
+  filter: blur(64px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+body::before {
+  top: -4rem;
+  right: -4rem;
+  background: var(--bg-accent);
+}
+
+body::after {
+  bottom: -6rem;
+  left: -4rem;
+  background: var(--bg-accent-2);
+}
+
+a {
+  color: inherit;
+}
+
+.skip-link {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  transform: translateY(-200%);
+  padding: 0.75rem 1rem;
+  border-radius: 999px;
+  background: var(--accent);
+  color: white;
+  z-index: 10;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+.shell {
+  position: relative;
+  z-index: 1;
+  width: min(1120px, calc(100% - 2rem));
+  margin: 0 auto;
+  padding: 3rem 0 4rem;
+}
+
+.grid {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.three-up {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.two-up {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.panel {
+  border: 1px solid var(--panel-border);
+  border-radius: 1.5rem;
+  background: var(--panel);
+  backdrop-filter: blur(18px);
+  box-shadow: var(--shadow);
+}
+
+.hero {
+  padding: 2rem;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.hero h1,
+.card h2,
+.stack h2 {
+  margin: 1rem 0 0;
+  line-height: 0.95;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+}
+
+.hero h1 {
+  max-width: 14ch;
+  font-size: clamp(3rem, 7vw, 5.8rem);
+}
+
+.lede,
+.card p,
+.stack p,
+.status-list {
+  color: var(--muted);
+  line-height: 1.7;
+  font-size: 1rem;
+}
+
+.lede {
+  max-width: 65ch;
+  margin-top: 1rem;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;
+  padding: 0.85rem 1.15rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.button-primary {
+  background: var(--accent);
+  color: white;
+}
+
+.button-primary:hover {
+  background: var(--accent-strong);
+}
+
+.button-secondary {
+  border-color: var(--panel-border);
+  background: transparent;
+}
+
+.card,
+.stack {
+  padding: 1.5rem;
+}
+
+.card h2,
+.stack h2 {
+  font-size: clamp(1.4rem, 3vw, 2rem);
+}
+
+pre {
+  overflow: auto;
+  margin: 0;
+  padding: 1rem;
+  border-radius: 1rem;
+  background: rgba(17, 12, 9, 0.92);
+  color: #fff3ea;
+  font-family: var(--font-mono), ui-monospace, monospace;
+}
+
+.status-list {
+  margin: 1rem 0 0;
+  padding-left: 1.25rem;
+}
+
+.status-list li + li {
+  margin-top: 0.75rem;
+}
+
+@media (max-width: 900px) {
+  .three-up,
+  .two-up {
+    grid-template-columns: 1fr;
+  }
+
+  .shell {
+    width: min(100% - 1rem, 1120px);
+    padding-top: 1rem;
+  }
+
+  .hero {
+    padding: 1.5rem;
+  }
+}

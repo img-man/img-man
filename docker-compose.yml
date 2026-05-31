@@ -1,0 +1,52 @@
+# SPDX-License-Identifier: Apache-2.0
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: img-man/img-man:local
+    depends_on:
+      mongo:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      HOSTNAME: 0.0.0.0
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-local-dev-nextauth-secret-change-me}
+      ASSET_URL_SIGNING_SECRET: ${ASSET_URL_SIGNING_SECRET:-local-dev-asset-secret-change-me}
+      AUTH_TRUST_HOST: "true"
+      MONGODB_URI: ${MONGODB_URI:-mongodb://mongo:27017/imageman}
+      MONGODB_DB: ${MONGODB_DB:-imageman}
+    ports:
+      - '${IMAGEMAN_PORT:-3000}:3000'
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:3000/api/health/ready').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    restart: unless-stopped
+
+  mongo:
+    image: mongo:8.0
+    command: ['--bind_ip_all']
+    healthcheck:
+      test: ['CMD', 'mongosh', '--quiet', '--eval', 'quit(db.runCommand({ ping: 1 }).ok ? 0 : 2)']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    restart: unless-stopped
+    volumes:
+      - img-man-mongo-data:/data/db
+
+volumes:
+  img-man-mongo-data:

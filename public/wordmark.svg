@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 120" role="img" aria-labelledby="title desc">
+  <title id="title">img-man wordmark</title>
+  <desc id="desc">A simple orange and teal wordmark for the img-man project.</desc>
+  <rect width="480" height="120" rx="24" fill="#17110d"/>
+  <circle cx="64" cy="60" r="26" fill="#ff8b4b"/>
+  <circle cx="96" cy="60" r="26" fill="#2fb7b2" opacity="0.92"/>
+  <text x="144" y="73" fill="#fff3ea" font-family="'Space Grotesk', sans-serif" font-size="42" font-weight="700">img-man</text>
+</svg>
