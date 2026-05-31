@@ -1,0 +1,15 @@
+{
+  "name": "@imageman/sdk",
+  "version": "0.1.0",
+  "description": "Edition + entitlement contracts shared by the ImageMan community core and the hosted wrapper.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./edition": "./src/edition.js"
+  },
+  "files": [
+    "src"
+  ]
+}

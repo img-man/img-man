@@ -1,0 +1,17 @@
+# Default ownership
+* @img-man/maintainers
+
+# Application code
+/src/ @img-man/maintainers
+/packages/ @img-man/maintainers
+
+# Infrastructure and deployment
+/scripts/ @img-man/maintainers
+/Dockerfile @img-man/maintainers
+/docker-compose.yml @img-man/maintainers
+/next.config.mjs @img-man/maintainers
+
+# Governance and meta
+/LICENSE @img-man/maintainers
+/GOVERNANCE.md @img-man/maintainers
+/.github/ @img-man/maintainers

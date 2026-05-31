@@ -1,0 +1,17 @@
+{
+  "name": "@imageman/mcp-server",
+  "version": "0.1.0",
+  "description": "Model Context Protocol surface for the ImageMan community core. Exposes safe, read-oriented tools over the agent tool-registry contract.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "src/index.js",
+  "bin": {
+    "imageman-mcp": "src/cli.js"
+  },
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "files": [
+    "src"
+  ]
+}
