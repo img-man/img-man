@@ -134,6 +134,15 @@ export function UploadQueue({
   pausedRef.current = paused;
   const queueRef = useRef<QueuedFile[]>([]);
   queueRef.current = queue;
+  // Tracks which items have reached a terminal status, updated synchronously
+  // the moment each upload settles — not via queueRef, which only reflects
+  // React state as of the last render. Checking queueRef for "is everything
+  // done" from inside a promise .finally() races that render: the state
+  // update from the item's own onStageChange('done') hasn't necessarily been
+  // committed yet, so the check can see the just-finished item as still
+  // 'uploading' and skip the onUploadComplete callback for a batch that in
+  // fact fully succeeded.
+  const settledIds = useRef(new Set<string>());
 
   // Check if bucket is provisioned
   useEffect(() => {
@@ -242,6 +251,8 @@ export function UploadQueue({
           status: 'error',
           error: err instanceof Error ? err.message : 'Upload failed',
         });
+      } finally {
+        settledIds.current.add(item.id);
       }
     },
     [folderId, isEmbed, preferServerUpload],
@@ -285,12 +296,14 @@ export function UploadQueue({
         // Defer parent notification to a microtask so we never call a
         // parent setState from inside a setQueue updater (updaters run
         // during render and trigger React's "setState in render" warning).
+        // Checked against settledIds rather than queueRef: this item's own
+        // 'done'/'error' state update may not have committed to React state
+        // yet, but uploadFile's finally() above already recorded it as
+        // settled synchronously, so settledIds is never stale here.
         queueMicrotask(() => {
           const allFinished =
             queueRef.current.length > 0 &&
-            queueRef.current.every(
-              (f) => f.status === 'done' || f.status === 'error',
-            );
+            queueRef.current.every((f) => settledIds.current.has(f.id));
           if (allFinished) onUploadComplete?.();
         });
         processQueue();
@@ -360,6 +373,7 @@ export function UploadQueue({
   }, [bucketReady]);
 
   const removeFromQueue = useCallback((id: string) => {
+    settledIds.current.delete(id);
     setQueue((prev) => {
       const item = prev.find((f) => f.id === id);
       if (item?.preview) URL.revokeObjectURL(item.preview);
@@ -369,19 +383,23 @@ export function UploadQueue({
 
   const retryFailed = useCallback(() => {
     setQueue((prev) =>
-      prev.map((f) =>
-        f.status === 'error'
-          ? { ...f, status: 'queued' as const, progress: 0, error: undefined }
-          : f,
-      ),
+      prev.map((f) => {
+        if (f.status !== 'error') return f;
+        // The id is reused for the retry — clear its prior settled mark so
+        // the completion check does not treat this attempt as already done.
+        settledIds.current.delete(f.id);
+        return { ...f, status: 'queued' as const, progress: 0, error: undefined };
+      }),
     );
   }, []);
 
   const clearCompleted = useCallback(() => {
     setQueue((prev) => {
       for (const item of prev) {
-        if (item.status === 'done' && item.preview)
-          URL.revokeObjectURL(item.preview);
+        if (item.status === 'done') {
+          settledIds.current.delete(item.id);
+          if (item.preview) URL.revokeObjectURL(item.preview);
+        }
       }
       return prev.filter((f) => f.status !== 'done');
     });
@@ -390,6 +408,7 @@ export function UploadQueue({
   const clearAll = useCallback(() => {
     setQueue((prev) => {
       for (const item of prev) {
+        settledIds.current.delete(item.id);
         if (item.preview) URL.revokeObjectURL(item.preview);
       }
       return [];

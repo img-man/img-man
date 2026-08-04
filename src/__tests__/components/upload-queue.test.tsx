@@ -102,4 +102,24 @@ describe('UploadQueue', () => {
       expect.objectContaining({ preferServerUpload: true }),
     );
   });
+
+  it('calls onUploadComplete once every file in the batch has settled', async () => {
+    // Regression test: onUploadComplete used to be missed when the
+    // completion check ran against a queue ref that had not yet observed
+    // this item's own 'done' state update, which made the caller's asset
+    // list never refetch even though every upload had actually finished.
+    const onUploadComplete = vi.fn();
+    const { container } = render(<UploadQueue onUploadComplete={onUploadComplete} />);
+
+    await waitFor(() => expect(globalThis.fetch).toHaveBeenCalled());
+
+    const inputs = container.querySelectorAll('input[type="file"]');
+    const fileInput = inputs[0] as HTMLInputElement;
+    const file = new File(['hello'], 'photo.png', { type: 'image/png' });
+
+    setInputFiles(fileInput, [file]);
+
+    await waitFor(() => expect(mockUploadAssetFile).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(onUploadComplete).toHaveBeenCalledTimes(1));
+  });
 });
