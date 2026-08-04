@@ -8,11 +8,12 @@ import { Loader2, Eye, EyeOff } from 'lucide-react';
 import { redirectAfterSignin } from './actions';
 
 export default function SignInPage() {
- const [email, setEmail] = useState('admin@img-man.com');
- const [password, setPassword] = useState('Admin@12345');
+ const [email, setEmail] = useState('');
+ const [password, setPassword] = useState('');
  const [showPassword, setShowPassword] = useState(false);
  const [error, setError] = useState('');
  const [loading, setLoading] = useState(false);
+ const [firstRun, setFirstRun] = useState(false);
  const [oauthProviders, setOauthProviders] = useState({
   google: false,
   github: false,
@@ -25,6 +26,24 @@ export default function SignInPage() {
 	github: Boolean(providers?.github),
    });
   });
+ }, []);
+
+ // Offer the documented first-run login only while this deployment genuinely
+ // has no accounts. Filling it in unconditionally means that once the operator
+ // renames the admin, the form still hands back the old default address — which
+ // is how you end up signing in as an account you thought you had replaced.
+ useEffect(() => {
+  fetch('/api/auth/bootstrap-status')
+   .then((res) => res.json())
+   .then((data: { pending?: boolean; email?: string | null }) => {
+	if (!data?.pending || !data.email) return;
+	setFirstRun(true);
+	setEmail(data.email);
+	setPassword('Admin@12345');
+   })
+   .catch(() => {
+	/* the form is perfectly usable without the hint */
+   });
  }, []);
 
  const hasOauthProviders = oauthProviders.google || oauthProviders.github;
@@ -64,11 +83,12 @@ export default function SignInPage() {
  <p className="mt-1 text-sm text-dash-text2">
  Sign in to your img-man workspace
  </p>
- <p className="mt-2 rounded-lg bg-dash-muted px-3 py-2 text-xs text-dash-text2">
-  First run? Sign in with the bootstrap administrator from your{' '}
-  <code className="rounded bg-dash-badge px-1">SETUP.md</code>. You will be
-  required to replace those credentials before the dashboard opens.
- </p>
+ {firstRun && (
+  <p className="mt-2 rounded-lg bg-dash-muted px-3 py-2 text-xs text-dash-text2">
+   First run — the default administrator is filled in below. You will be
+   required to replace these credentials before the dashboard opens.
+  </p>
+ )}
  </div>
 
  {hasOauthProviders && (

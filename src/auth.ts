@@ -27,13 +27,26 @@ const BOOTSTRAP_PASSWORD =
 export const BOOTSTRAP_USES_PUBLISHED_DEFAULTS =
   !process.env.IMGMAN_BOOTSTRAP_EMAIL && !process.env.IMGMAN_BOOTSTRAP_PASSWORD;
 
+/**
+ * Seeds the first administrator, once, on a genuinely empty deployment.
+ *
+ * The gate is "this instance has no users at all" — deliberately not "the
+ * bootstrap address is missing". Once the operator completes the forced
+ * credential change they usually rename the account, at which point the
+ * default address no longer exists; an existence check on that address would
+ * read that as a fresh install and re-seed the published default login on the
+ * next sign-in attempt, handing anyone who knows the documented credentials a
+ * live owner account.
+ */
 async function ensureBootstrapAdminUser() {
- try {
-  const existing = await User.findOne({ email: BOOTSTRAP_EMAIL }).lean();
-  if (existing) return;
+ // Any user at all means this deployment is already bootstrapped.
+ const userCount = await User.estimatedDocumentCount();
+ if (userCount > 0) return;
 
+ let user;
+ try {
   const passwordHash = await hash(BOOTSTRAP_PASSWORD, 12);
-  const user = await User.create({
+  user = await User.create({
    name: 'img-man Admin',
    email: BOOTSTRAP_EMAIL,
    passwordHash,
@@ -41,7 +54,13 @@ async function ensureBootstrapAdminUser() {
    // Force the operator off the default login before anything else loads.
    mustChangeCredentials: true,
   });
+ } catch (err) {
+  // Another request won the race and created the same user. Nothing to do.
+  if (isDuplicateKeyError(err)) return;
+  throw err;
+ }
 
+ try {
   const slug = `img-man-admin-${Date.now().toString(36)}`;
   const org = await Organization.create({
    name: 'img-man Workspace',
@@ -66,17 +85,21 @@ async function ensureBootstrapAdminUser() {
    status: 'active',
   });
  } catch (err) {
-  // Ignore duplicate-key races when multiple requests bootstrap together.
-  if (
-   typeof err === 'object' &&
-   err !== null &&
-   'code' in err &&
-   (err as { code?: number }).code === 11000
-  ) {
-   return;
-  }
+  // A user with no org cannot load the dashboard and would block every later
+  // bootstrap attempt, because the count gate above would now see it. Roll the
+  // partial seed back so the next sign-in can retry from a clean slate.
+  await User.deleteOne({ _id: user._id }).catch(() => {});
   throw err;
  }
+}
+
+function isDuplicateKeyError(err: unknown): boolean {
+ return (
+  typeof err === 'object' &&
+  err !== null &&
+  'code' in err &&
+  (err as { code?: number }).code === 11000
+ );
 }
 
 const providers: NextAuthOptions['providers'] = [];
