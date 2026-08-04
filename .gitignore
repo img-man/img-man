@@ -1,8 +1,10 @@
-# See https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files for details.
-# This repository is the public img-man core. Real credentials, hosted-service
-# deployment config, and private overlays belong outside this repo.
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# Boundary rule: this repo is the public `img-man` / ImageMan core. It should
+# contain the self-hostable product, npm package sources, extension contracts,
+# and templates only. Real env files, hosted-service deployment config, and
+# private white-label/service overlays belong outside this repo.
 
-# Dependencies / package managers
+# dependencies / package managers
 /node_modules
 /.pnp
 .pnp.*
@@ -13,7 +15,7 @@
 !.yarn/releases
 !.yarn/versions
 
-# Build / cache outputs
+# framework/build/cache outputs
 /.next/
 /out/
 /build
@@ -23,38 +25,45 @@
 .cache/
 .eslintcache
 *.tsbuildinfo
+next-env.d.ts
 
-# Runtime / generated files
+# npm package artifacts
+*.tgz
+*.tar.gz
+
+# testing and reports
+/coverage
+/test-results/
+/playwright-report/
+/playwright/.auth/
+/.playwright-mcp/
+*.lcov
+junit.xml
+
+# local runtime data
 /.tmp/
 /tmp/
 /temp/
 /data/
-/.generated/
 *.pid
+*.seed
 *.pid.lock
 build-output.txt
 
-# Logs / reports
+# debug logs
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
-sbom.cdx.json
-eval-results.json
-migration-stress-results.json
-mcp-publish-eval-results.json
-roadmap-blockers.json
-gitleaks-report*.json
-trufflehog-report*.json
 
-# Env files
+# env files: customers/operators supply these locally; only examples are tracked
 .env
 .env.*
 !.env.example
 !.env*.example
 
-# Credentials - never commit real secrets
+# credentials and deployment config - never commit real secrets to public core
 *.pem
 *.key
 *.p12
@@ -68,11 +77,52 @@ keys.json
 gcloud.json
 /secrets/
 /extra/
+app.yaml
 
-# Editor / OS state
+# hosted/private repo boundary: Image-man service and white-label code lives in
+# the private repo, which consumes this repo via subtree/clone and overlays.
+/image-man-service/
+/imageman-service/
+/img-man-service/
+/private/
+/_private/
+/enterprise/
+/ee/
+/upstream/
+/overlay/
+/overlays/
+/white-label/
+/whitelabel/
+/white-sourcing/
+/brand-kits/
+/customer-templates/
+/apps/landing/
+/apps/cloud-console/
+/apps/white-label-demo/
+/packages/imageman-whitelabel/
+/packages/imageman-cloud-support/
+/packages/imageman-enterprise/
+/packages/premium-templates/
+
+# hosting provider local state
+.vercel
+
+# editor / OS local state
 .DS_Store
 /.vscode/
 .idea/
 .zed/
 *.code-workspace
 .history/
+tmpclaude*
+
+# generated release/evidence artifacts
+sbom.cdx.json
+eval-results.json
+migration-stress-results.json
+mcp-publish-eval-results.json
+roadmap-blockers.json
+
+# security scan reports contain partial secret values
+gitleaks-report*.json
+trufflehog-report*.json

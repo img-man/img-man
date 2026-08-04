@@ -1,0 +1,31 @@
+<svg width="1280" height="800" viewBox="0 0 1280 800" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">ImageMan MCP agent screenshot</title>
+  <desc id="desc">A product screenshot-style preview of an MCP client calling ImageMan tools.</desc>
+  <rect width="1280" height="800" fill="#0f172a"/>
+  <rect x="72" y="64" width="1136" height="672" rx="22" fill="#111827" stroke="#334155"/>
+  <text x="112" y="118" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="800" fill="#ffffff">Agent workspace</text>
+  <text x="112" y="150" font-family="Inter, Arial, sans-serif" font-size="15" fill="#94a3b8">Claude Desktop / Cursor MCP tool surface</text>
+  <rect x="112" y="190" width="500" height="476" rx="16" fill="#020617" stroke="#1e293b"/>
+  <text x="142" y="230" font-family="Inter, Arial, sans-serif" font-size="15" font-weight="700" fill="#e2e8f0">Conversation</text>
+  <rect x="142" y="262" width="420" height="70" rx="14" fill="#1e293b"/>
+  <text x="164" y="292" font-family="Inter, Arial, sans-serif" font-size="15" fill="#e2e8f0">Find approved launch images and make</text>
+  <text x="164" y="316" font-family="Inter, Arial, sans-serif" font-size="15" fill="#e2e8f0">a CDN-ready webp transform.</text>
+  <rect x="192" y="366" width="370" height="126" rx="14" fill="#064e3b"/>
+  <text x="214" y="398" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="700" fill="#d1fae5">imageman.asset.search</text>
+  <text x="214" y="426" font-family="Inter, Arial, sans-serif" font-size="13" fill="#a7f3d0">query: launch approved hero</text>
+  <text x="214" y="452" font-family="Inter, Arial, sans-serif" font-size="13" fill="#a7f3d0">result: 3 matching assets</text>
+  <rect x="192" y="520" width="370" height="92" rx="14" fill="#1e3a8a"/>
+  <text x="214" y="552" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="700" fill="#dbeafe">imageman.transform.url</text>
+  <text x="214" y="580" font-family="Inter, Arial, sans-serif" font-size="13" fill="#bfdbfe">format: webp, width: 1280, q: 85</text>
+  <rect x="656" y="190" width="512" height="476" rx="16" fill="#f8fafc"/>
+  <text x="696" y="232" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="800" fill="#111827">Tool registry</text>
+  <text x="696" y="260" font-family="Inter, Arial, sans-serif" font-size="14" fill="#64748b">8 ImageMan tools exposed over MCP stdio</text>
+  <g font-family="Inter, Arial, sans-serif" font-size="14">
+    <rect x="696" y="300" width="410" height="44" rx="10" fill="#ffffff" stroke="#e2e8f0"/><text x="716" y="328" fill="#111827">imageman.asset.search</text><text x="1018" y="328" fill="#16a34a">read</text>
+    <rect x="696" y="356" width="410" height="44" rx="10" fill="#ffffff" stroke="#e2e8f0"/><text x="716" y="384" fill="#111827">imageman.asset.get</text><text x="1018" y="384" fill="#16a34a">read</text>
+    <rect x="696" y="412" width="410" height="44" rx="10" fill="#ffffff" stroke="#e2e8f0"/><text x="716" y="440" fill="#111827">imageman.asset.tag</text><text x="1018" y="440" fill="#f97316">write</text>
+    <rect x="696" y="468" width="410" height="44" rx="10" fill="#ffffff" stroke="#e2e8f0"/><text x="716" y="496" fill="#111827">imageman.transform.url</text><text x="1018" y="496" fill="#16a34a">read</text>
+    <rect x="696" y="524" width="410" height="44" rx="10" fill="#ffffff" stroke="#e2e8f0"/><text x="716" y="552" fill="#111827">imageman.ai.image.generate</text><text x="1018" y="552" fill="#f97316">write</text>
+    <rect x="696" y="580" width="410" height="44" rx="10" fill="#ffffff" stroke="#e2e8f0"/><text x="716" y="608" fill="#111827">+ 3 more tools</text><text x="1018" y="608" fill="#64748b">MCP</text>
+  </g>
+</svg>

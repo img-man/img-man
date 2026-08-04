@@ -1,0 +1,202 @@
+{
+  "categories": [
+    {
+      "name": "Basic",
+      "shapes": [
+        {
+          "id": "triangle",
+          "label": "Triangle",
+          "viewBox": "0 0 100 100",
+          "path": "M50 5 L95 95 L5 95 Z"
+        },
+        {
+          "id": "star-5",
+          "label": "Star",
+          "viewBox": "0 0 100 100",
+          "path": "M50 2 L63 38 L98 38 L69 60 L80 96 L50 74 L20 96 L31 60 L2 38 L37 38 Z"
+        },
+        {
+          "id": "pentagon",
+          "label": "Pentagon",
+          "viewBox": "0 0 100 100",
+          "path": "M50 2 L97 36 L79 94 L21 94 L3 36 Z"
+        },
+        {
+          "id": "hexagon",
+          "label": "Hexagon",
+          "viewBox": "0 0 100 100",
+          "path": "M50 2 L93 27 L93 73 L50 98 L7 73 L7 27 Z"
+        },
+        {
+          "id": "diamond",
+          "label": "Diamond",
+          "viewBox": "0 0 100 100",
+          "path": "M50 2 L98 50 L50 98 L2 50 Z"
+        },
+        {
+          "id": "octagon",
+          "label": "Octagon",
+          "viewBox": "0 0 100 100",
+          "path": "M30 2 L70 2 L98 30 L98 70 L70 98 L30 98 L2 70 L2 30 Z"
+        },
+        {
+          "id": "cross",
+          "label": "Cross",
+          "viewBox": "0 0 100 100",
+          "path": "M35 0 L65 0 L65 35 L100 35 L100 65 L65 65 L65 100 L35 100 L35 65 L0 65 L0 35 L35 35 Z"
+        },
+        {
+          "id": "parallelogram",
+          "label": "Parallelogram",
+          "viewBox": "0 0 120 80",
+          "path": "M25 5 L115 5 L95 75 L5 75 Z"
+        }
+      ]
+    },
+    {
+      "name": "Arrows",
+      "shapes": [
+        {
+          "id": "arrow-right",
+          "label": "Arrow Right",
+          "viewBox": "0 0 120 80",
+          "path": "M0 25 L75 25 L75 5 L115 40 L75 75 L75 55 L0 55 Z"
+        },
+        {
+          "id": "arrow-left",
+          "label": "Arrow Left",
+          "viewBox": "0 0 120 80",
+          "path": "M120 25 L45 25 L45 5 L5 40 L45 75 L45 55 L120 55 Z"
+        },
+        {
+          "id": "arrow-up",
+          "label": "Arrow Up",
+          "viewBox": "0 0 80 120",
+          "path": "M25 120 L25 45 L5 45 L40 5 L75 45 L55 45 L55 120 Z"
+        },
+        {
+          "id": "arrow-down",
+          "label": "Arrow Down",
+          "viewBox": "0 0 80 120",
+          "path": "M25 0 L25 75 L5 75 L40 115 L75 75 L55 75 L55 0 Z"
+        },
+        {
+          "id": "double-arrow-h",
+          "label": "Double Arrow",
+          "viewBox": "0 0 140 80",
+          "path": "M0 40 L30 10 L30 28 L110 28 L110 10 L140 40 L110 70 L110 52 L30 52 L30 70 Z"
+        },
+        {
+          "id": "chevron-right",
+          "label": "Chevron",
+          "viewBox": "0 0 100 100",
+          "path": "M0 0 L70 0 L100 50 L70 100 L0 100 L30 50 Z"
+        }
+      ]
+    },
+    {
+      "name": "Callouts",
+      "shapes": [
+        {
+          "id": "speech-bubble",
+          "label": "Speech Bubble",
+          "viewBox": "0 0 120 100",
+          "path": "M10 5 L110 5 Q115 5 115 10 L115 60 Q115 65 110 65 L50 65 L30 90 L35 65 L10 65 Q5 65 5 60 L5 10 Q5 5 10 5 Z"
+        },
+        {
+          "id": "thought-bubble",
+          "label": "Thought Bubble",
+          "viewBox": "0 0 120 100",
+          "path": "M60 5 Q95 5 110 20 Q120 35 110 50 Q115 65 100 70 Q85 80 65 75 Q45 80 30 70 Q10 65 5 50 Q0 35 10 20 Q25 5 60 5 Z M30 80 Q25 85 28 90 M22 90 Q18 93 20 96"
+        },
+        {
+          "id": "banner",
+          "label": "Banner",
+          "viewBox": "0 0 140 60",
+          "path": "M0 15 L15 0 L15 10 L125 10 L125 0 L140 15 L125 30 L125 50 L115 40 L25 40 L15 50 L15 30 Z"
+        },
+        {
+          "id": "ribbon",
+          "label": "Ribbon",
+          "viewBox": "0 0 160 50",
+          "path": "M0 0 L15 25 L0 50 L40 50 L40 40 L120 40 L120 50 L160 50 L145 25 L160 0 L120 0 L120 10 L40 10 L40 0 Z"
+        }
+      ]
+    },
+    {
+      "name": "Decorative",
+      "shapes": [
+        {
+          "id": "heart",
+          "label": "Heart",
+          "viewBox": "0 0 100 100",
+          "path": "M50 88 C25 68 2 52 2 30 C2 14 14 2 30 2 C38 2 46 6 50 14 C54 6 62 2 70 2 C86 2 98 14 98 30 C98 52 75 68 50 88 Z"
+        },
+        {
+          "id": "cloud",
+          "label": "Cloud",
+          "viewBox": "0 0 130 80",
+          "path": "M30 70 Q5 70 5 52 Q5 38 18 35 Q15 18 35 10 Q55 2 68 15 Q78 5 92 10 Q110 15 108 35 Q122 38 125 52 Q125 70 100 70 Z"
+        },
+        {
+          "id": "lightning",
+          "label": "Lightning",
+          "viewBox": "0 0 60 100",
+          "path": "M35 0 L15 42 L28 42 L10 100 L55 38 L38 38 L55 0 Z"
+        },
+        {
+          "id": "star-4",
+          "label": "4-Point Star",
+          "viewBox": "0 0 100 100",
+          "path": "M50 0 L60 35 L100 50 L60 65 L50 100 L40 65 L0 50 L40 35 Z"
+        },
+        {
+          "id": "star-6",
+          "label": "6-Point Star",
+          "viewBox": "0 0 100 100",
+          "path": "M50 0 L60 30 L93 15 L75 43 L100 60 L68 62 L65 95 L50 70 L35 95 L32 62 L0 60 L25 43 L7 15 L40 30 Z"
+        },
+        {
+          "id": "crescent",
+          "label": "Crescent",
+          "viewBox": "0 0 100 100",
+          "path": "M70 5 A45 45 0 1 0 70 95 A35 35 0 1 1 70 5 Z"
+        }
+      ]
+    },
+    {
+      "name": "Lines",
+      "shapes": [
+        {
+          "id": "line-h",
+          "label": "Horizontal Line",
+          "viewBox": "0 0 100 10",
+          "path": "M0 5 L100 5",
+          "isLine": true
+        },
+        {
+          "id": "line-v",
+          "label": "Vertical Line",
+          "viewBox": "0 0 10 100",
+          "path": "M5 0 L5 100",
+          "isLine": true
+        },
+        {
+          "id": "line-dashed",
+          "label": "Dashed Line",
+          "viewBox": "0 0 100 10",
+          "path": "M0 5 L100 5",
+          "isLine": true,
+          "strokeDasharray": "8 4"
+        },
+        {
+          "id": "line-arrow",
+          "label": "Arrow Line",
+          "viewBox": "0 0 110 20",
+          "path": "M0 10 L85 10 M85 3 L105 10 L85 17",
+          "isLine": true
+        }
+      ]
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 # Contributing to img-man
 
 Thanks for your interest in contributing to **img-man**, the open-source core of
-ImageMan. This repository is the single source of truth for the community
+img-man. This repository is the single source of truth for the community
 edition. The hosted SaaS lives in a separate private repository that consumes
 this code unmodified.
 

@@ -15,12 +15,12 @@ grant rights to the "ImageMan" name, logo, or wordmark.
   service, or company in a way that implies official affiliation or endorsement.
 - Modify the logo/wordmark and present it as the official mark.
 - Use the marks for a competing hosted service that suggests it is the official
-  ImageMan cloud.
+  img-man cloud.
 
 ## White-label deployments
 
 The community edition supports replacing the wordmark and theme for your own
-brand. When you white-label, remove the ImageMan marks from the user-facing
-surface; do not present a modified build as official ImageMan.
+brand. When you white-label, remove the img-man marks from the user-facing
+surface; do not present a modified build as official img-man.
 
 Questions about trademark usage: contact the maintainers in CODEOWNERS.

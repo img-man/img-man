@@ -1,0 +1,67 @@
+<svg width="1280" height="800" viewBox="0 0 1280 800" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">ImageMan dashboard screenshot</title>
+  <desc id="desc">A product screenshot-style dashboard preview showing asset cards, filters, and metadata.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f8fafc"/>
+      <stop offset="1" stop-color="#eef2ff"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="18" stdDeviation="22" flood-color="#0f172a" flood-opacity="0.18"/>
+    </filter>
+  </defs>
+  <rect width="1280" height="800" fill="url(#bg)"/>
+  <rect x="70" y="60" width="1140" height="680" rx="18" fill="#ffffff" filter="url(#shadow)"/>
+  <rect x="70" y="60" width="230" height="680" rx="18" fill="#111827"/>
+  <text x="104" y="112" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700" fill="#ffffff">ImageMan</text>
+  <text x="104" y="150" font-family="Inter, Arial, sans-serif" font-size="13" fill="#9ca3af">Asset workspace</text>
+  <g font-family="Inter, Arial, sans-serif" font-size="15" fill="#d1d5db">
+    <rect x="94" y="190" width="182" height="40" rx="10" fill="#374151"/>
+    <text x="122" y="216">Assets</text>
+    <text x="122" y="270">Designs</text>
+    <text x="122" y="322">AI Studio</text>
+    <text x="122" y="374">Delivery</text>
+    <text x="122" y="426">Settings</text>
+  </g>
+  <text x="340" y="118" font-family="Inter, Arial, sans-serif" font-size="34" font-weight="700" fill="#111827">All assets</text>
+  <text x="340" y="150" font-family="Inter, Arial, sans-serif" font-size="15" fill="#64748b">Search, organize, transform, and share visual files.</text>
+  <rect x="340" y="185" width="520" height="44" rx="12" fill="#f1f5f9" stroke="#e2e8f0"/>
+  <text x="362" y="213" font-family="Inter, Arial, sans-serif" font-size="15" fill="#64748b">Search by tag, file name, or visual meaning</text>
+  <rect x="890" y="185" width="130" height="44" rx="12" fill="#111827"/>
+  <text x="928" y="213" font-family="Inter, Arial, sans-serif" font-size="15" font-weight="700" fill="#ffffff">Upload</text>
+  <rect x="1035" y="185" width="115" height="44" rx="12" fill="#eef2ff"/>
+  <text x="1064" y="213" font-family="Inter, Arial, sans-serif" font-size="15" font-weight="700" fill="#4338ca">Share</text>
+  <g font-family="Inter, Arial, sans-serif">
+    <g transform="translate(340 270)">
+      <rect width="240" height="190" rx="16" fill="#f8fafc" stroke="#e2e8f0"/>
+      <rect x="16" y="16" width="208" height="106" rx="12" fill="#dbeafe"/>
+      <circle cx="62" cy="54" r="18" fill="#60a5fa"/>
+      <path d="M28 108 L86 72 L128 98 L164 62 L214 108 Z" fill="#2563eb" opacity="0.9"/>
+      <text x="16" y="150" font-size="16" font-weight="700" fill="#111827">campaign-hero.webp</text>
+      <text x="16" y="174" font-size="12" fill="#64748b">webp - 124 KB - 8 tags</text>
+    </g>
+    <g transform="translate(610 270)">
+      <rect width="240" height="190" rx="16" fill="#f8fafc" stroke="#e2e8f0"/>
+      <rect x="16" y="16" width="208" height="106" rx="12" fill="#dcfce7"/>
+      <rect x="40" y="44" width="70" height="54" rx="8" fill="#22c55e"/>
+      <rect x="124" y="34" width="58" height="74" rx="8" fill="#15803d"/>
+      <text x="16" y="150" font-size="16" font-weight="700" fill="#111827">brand-pack.png</text>
+      <text x="16" y="174" font-size="12" fill="#64748b">png - 302 KB - approved</text>
+    </g>
+    <g transform="translate(880 270)">
+      <rect width="240" height="190" rx="16" fill="#f8fafc" stroke="#e2e8f0"/>
+      <rect x="16" y="16" width="208" height="106" rx="12" fill="#fee2e2"/>
+      <path d="M48 98 C72 34 130 34 154 98 Z" fill="#f97316"/>
+      <circle cx="160" cy="58" r="22" fill="#fb7185"/>
+      <text x="16" y="150" font-size="16" font-weight="700" fill="#111827">social-cover.jpg</text>
+      <text x="16" y="174" font-size="12" fill="#64748b">jpg - shared yesterday</text>
+    </g>
+  </g>
+  <rect x="340" y="505" width="780" height="1" fill="#e2e8f0"/>
+  <text x="340" y="552" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="#111827">Recent activity</text>
+  <g font-family="Inter, Arial, sans-serif" font-size="14" fill="#334155">
+    <circle cx="352" cy="592" r="5" fill="#22c55e"/><text x="372" y="597">AI tags added to campaign-hero.webp</text>
+    <circle cx="352" cy="632" r="5" fill="#3b82f6"/><text x="372" y="637">brand-pack.png shared with design team</text>
+    <circle cx="352" cy="672" r="5" fill="#f97316"/><text x="372" y="677">social-cover.jpg transformed to AVIF</text>
+  </g>
+</svg>

@@ -1,17 +1,40 @@
 {
-  "name": "@imageman/mcp-server",
+  "name": "@img-man/mcp-server",
   "version": "0.1.0",
-  "description": "Model Context Protocol surface for the ImageMan community core. Exposes safe, read-oriented tools over the agent tool-registry contract.",
+  "description": "Model Context Protocol server exposing the ImageMan Tool Registry to Claude Desktop, Cursor, and other MCP-aware clients.",
   "license": "Apache-2.0",
   "type": "module",
-  "main": "src/index.js",
+  "main": "dist/index.js",
   "bin": {
-    "imageman-mcp": "src/cli.js"
-  },
-  "exports": {
-    ".": "./src/index.js"
+    "imageman-mcp": "dist/bin.js"
   },
   "files": [
-    "src"
-  ]
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "prepublishOnly": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/shivam411/ImageMan.git",
+    "directory": "packages/imageman-mcp-server"
+  },
+  "homepage": "https://github.com/shivam411/ImageMan/tree/main/packages/imageman-mcp-server#readme",
+  "bugs": {
+    "url": "https://github.com/shivam411/ImageMan/issues"
+  },
+  "keywords": ["imageman", "mcp", "model-context-protocol", "ai", "tools"],
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
 }

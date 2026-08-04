@@ -24,6 +24,8 @@ pnpm-debug.log*
 *credentials*.json
 keys.json
 gcloud.json
+app.yaml
+dispatch.yaml
 extra
 secrets
 gitleaks-report*.json
@@ -33,6 +35,13 @@ eval-results.json
 migration-stress-results.json
 mcp-publish-eval-results.json
 roadmap-blockers.json
+image-man-service
+imageman-service
+img-man-service
+private
+_private
+enterprise
+ee
 upstream
 overlay
 overlays
@@ -41,3 +50,10 @@ whitelabel
 white-sourcing
 brand-kits
 customer-templates
+apps/landing
+apps/cloud-console
+apps/white-label-demo
+packages/imageman-whitelabel
+packages/imageman-cloud-support
+packages/imageman-enterprise
+packages/premium-templates

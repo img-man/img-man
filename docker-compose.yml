@@ -4,7 +4,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: img-man/img-man:local
+    image: imageman/imageman:local
     depends_on:
       mongo:
         condition: service_healthy
@@ -12,7 +12,6 @@ services:
       NODE_ENV: production
       PORT: 3000
       HOSTNAME: 0.0.0.0
-      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
       NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-local-dev-nextauth-secret-change-me}
       ASSET_URL_SIGNING_SECRET: ${ASSET_URL_SIGNING_SECRET:-local-dev-asset-secret-change-me}
@@ -46,7 +45,7 @@ services:
       start_period: 10s
     restart: unless-stopped
     volumes:
-      - img-man-mongo-data:/data/db
+      - imageman-mongo-data:/data/db
 
 volumes:
-  img-man-mongo-data:
+  imageman-mongo-data:

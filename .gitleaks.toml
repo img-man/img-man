@@ -1,0 +1,24 @@
+title = "ImageMan gitleaks config"
+
+# This file suppresses known false positives (test fixtures and doc placeholders).
+# Real credentials MUST be rotated and purged from git history before public flip.
+# See agent-docs/dev-updates/SECURITY-ADVISORY-PUBLIC-FLIP.md for the remediation plan.
+
+[allowlist]
+description = "Suppress test fixtures and documentation placeholder keys"
+paths = [
+  # Test fixtures — fake keys used to test redaction, storage, auth modules
+  '''src/__tests__''',
+  # API playground demo data — all keys are clearly synthetic (sk_live_abc123def456, etc.)
+  '''src/lib/api-playground-data\.ts''',
+  # Documentation code snippets — placeholder Bearer tokens in guide prose
+  '''src/lib/guides\.ts''',
+  '''API_DOCUMENTATION\.md''',
+  '''src/app/docs/api/page\.tsx''',
+  # Customer docs — all keys are placeholder examples
+  '''customer-docs/''',
+  # Agent docs — internal architecture notes, no real credentials
+  '''agent-docs/''',
+  # MCP eval script — uses clearly fake eval API key im_eval_000000000000
+  '''scripts/eval-mcp-publish\.ts''',
+]
