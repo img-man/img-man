@@ -57,7 +57,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
-      '@imageman/sdk': path.resolve(__dirname, './packages/imageman-sdk/src/index.ts'),
+      '@img-man/sdk': path.resolve(__dirname, './packages/imageman-sdk/src/index.ts'),
     },
   },
 });

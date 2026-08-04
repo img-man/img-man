@@ -179,7 +179,7 @@ export class ImgManWidget {
 
 // ─── UMD export for <script> tag usage ──────────────────────────
 if (typeof window !== 'undefined') {
-  (window as unknown as Record<string, unknown>)['img-man'] = { Widget: ImgManWidget };
+  (window as unknown as Record<string, unknown>).ImageMan = { Widget: ImgManWidget };
 }
 
 export * from './edition';

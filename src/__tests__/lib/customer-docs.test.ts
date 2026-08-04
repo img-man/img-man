@@ -84,7 +84,7 @@ describe('customer docs helpers', () => {
     const content = await fs.readFile(embedDocPath, 'utf8');
 
     expect(content).toContain('new img-man.Widget({');
-    expect(content).toContain("import { ImgManWidget } from '@imageman/sdk';");
+    expect(content).toContain("import { ImgManWidget } from '@img-man/sdk';");
     expect(content).toContain('onUpload: (asset) =>');
     expect(content).toContain('onSelect: (assets) =>');
     expect(content).toContain("import { useEffect, useRef } from 'react';");

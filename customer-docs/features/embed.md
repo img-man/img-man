@@ -44,9 +44,9 @@ The img-man Embed SDK is a drop-in widget your site can use to let users pick or
    ```
 4. For npm or framework apps, install the package and use the named export:
    ```ts
-   import { ImageManWidget } from '@imageman/sdk';
+   import { ImgManWidget } from '@img-man/sdk';
 
-   const widget = new ImageManWidget({
+   const widget = new ImgManWidget({
      container: document.getElementById('imageman-container'),
      orgSlug: 'acme-corp',
      apiKey: 'IM_KEY_...',
@@ -66,7 +66,7 @@ The img-man Embed SDK is a drop-in widget your site can use to let users pick or
 
 ```tsx
 import { useEffect, useRef } from 'react';
-import { ImageManWidget } from '@imageman/sdk';
+import { ImgManWidget } from '@img-man/sdk';
 
 function AssetPicker({ onSelect }) {
   const containerRef = useRef(null);
@@ -75,7 +75,7 @@ function AssetPicker({ onSelect }) {
   useEffect(() => {
     if (!containerRef.current) return;
 
-    widgetRef.current = new ImageManWidget({
+    widgetRef.current = new ImgManWidget({
       container: containerRef.current,
       orgSlug: 'acme-corp',
       apiKey: import.meta.env.VITE_IMAGEMAN_API_KEY,
@@ -101,14 +101,14 @@ function AssetPicker({ onSelect }) {
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
-import { ImageManWidget } from '@imageman/sdk';
+import { ImgManWidget } from '@img-man/sdk';
 
 const container = ref(null);
 const emit = defineEmits(['select']);
 let widget = null;
 
 onMounted(() => {
-  widget = new ImageManWidget({
+  widget = new ImgManWidget({
     container: container.value,
     orgSlug: 'acme-corp',
     apiKey: import.meta.env.VITE_IMAGEMAN_API_KEY,
