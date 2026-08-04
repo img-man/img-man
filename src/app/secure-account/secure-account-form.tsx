@@ -61,7 +61,7 @@ export function SecureAccountForm({ currentEmail, currentName }: SecureAccountFo
   };
 
   return (
-    <div className="min-h-screen bg-dash-muted text-dash-text">
+    <div className="min-h-screen bg-dash-bg text-dash-text">
       <main className="mx-auto flex min-h-screen max-w-lg flex-col justify-center gap-6 px-6 py-16">
         <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-900 dark:bg-amber-950/40">
           <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400" />
@@ -163,7 +163,7 @@ export function SecureAccountForm({ currentEmail, currentName }: SecureAccountFo
           </div>
 
           {error && (
-            <p className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600 dark:bg-red-950/40 dark:text-red-400">
+            <p className="rounded-lg bg-red-100 px-3 py-2 text-xs text-red-900 dark:bg-red-950 dark:text-red-200">
               {error}
             </p>
           )}
@@ -171,7 +171,7 @@ export function SecureAccountForm({ currentEmail, currentName }: SecureAccountFo
           <button
             type="submit"
             disabled={saving}
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-dash-inverted px-6 py-3 text-sm font-semibold text-white transition hover:bg-dash-inverted-hover disabled:opacity-50"
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-white dark:bg-primary px-6 py-3 text-sm font-semibold text-dash-text dark:text-white transition hover:bg-gray-100 dark:hover:bg-primary-hover disabled:opacity-50"
           >
             {saving && <Loader2 className="h-4 w-4 animate-spin" />}
             Save and continue

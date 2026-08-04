@@ -3,12 +3,11 @@
 
 import { getProviders, signIn } from 'next-auth/react';
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Loader2, Eye, EyeOff } from 'lucide-react';
+import { redirectAfterSignin } from './actions';
 
 export default function SignInPage() {
- const router = useRouter();
  const [email, setEmail] = useState('admin@img-man.com');
  const [password, setPassword] = useState('Admin@12345');
  const [showPassword, setShowPassword] = useState(false);
@@ -44,7 +43,8 @@ export default function SignInPage() {
  setError('Invalid email or password');
  setLoading(false);
  } else if (res?.ok) {
- router.push('/dashboard');
+ // Server action will check if user needs to change credentials
+ await redirectAfterSignin();
  }
  } catch (err) {
  setError('An error occurred. Please try again.');
