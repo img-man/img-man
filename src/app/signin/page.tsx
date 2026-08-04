@@ -3,12 +3,15 @@
 
 import { getProviders, signIn } from 'next-auth/react';
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Eye, EyeOff } from 'lucide-react';
 
 export default function SignInPage() {
- const [email, setEmail] = useState('');
- const [password, setPassword] = useState('');
+ const router = useRouter();
+ const [email, setEmail] = useState('admin@img-man.com');
+ const [password, setPassword] = useState('Admin@12345');
+ const [showPassword, setShowPassword] = useState(false);
  const [error, setError] = useState('');
  const [loading, setLoading] = useState(false);
  const [oauthProviders, setOauthProviders] = useState({
@@ -35,28 +38,29 @@ export default function SignInPage() {
  const res = await signIn('credentials', {
  email,
  password,
- callbackUrl: '/dashboard',
  redirect: false,
  });
  if (res?.error) {
  setError('Invalid email or password');
- } else if (res?.url) {
- window.location.href = res.url;
+ setLoading(false);
+ } else if (res?.ok) {
+ router.push('/dashboard');
  }
- } finally {
+ } catch (err) {
+ setError('An error occurred. Please try again.');
  setLoading(false);
  }
  };
 
  return (
- <div className="min-h-screen bg-dash-muted text-dash-text">
+ <div className="min-h-screen bg-dash-bg text-dash-text">
  <main className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center gap-6 px-6 py-20">
  {/* Brand */}
  <div className="text-center">
- <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-dash-inverted text-sm font-bold tracking-widest text-white">
+ <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-sm font-bold tracking-widest text-dash-text">
  IM
  </div>
- <h1 className="text-2xl font-bold tracking-tight">Welcome back</h1>
+ <h1 className="text-2xl font-bold tracking-tight text-dash-text">Welcome back</h1>
  <p className="mt-1 text-sm text-dash-text2">
  Sign in to your img-man workspace
  </p>
@@ -73,7 +77,7 @@ export default function SignInPage() {
    <div className="grid w-full gap-3">
 	{oauthProviders.google && (
 	 <button
-	  className="flex w-full items-center justify-center gap-2 rounded-lg bg-dash-inverted px-6 py-3 text-sm font-semibold text-white transition hover:bg-dash-inverted-hover"
+	  className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-white transition hover:bg-primary-hover"
 	  onClick={() => signIn('google', { callbackUrl: '/dashboard' })}
 	  type="button"
 	 >
@@ -118,6 +122,7 @@ export default function SignInPage() {
  <input
  id="email"
  type="email"
+ autoComplete="email"
  placeholder="you@company.com"
  value={email}
  onChange={(e) => setEmail(e.target.value)}
@@ -129,23 +134,34 @@ export default function SignInPage() {
  <label htmlFor="password" className="mb-1 block text-xs font-medium text-dash-text2">
  Password
  </label>
+ <div className="relative">
  <input
  id="password"
- type="password"
+ type={showPassword ? 'text' : 'password'}
+ autoComplete="current-password"
  placeholder="••••••••"
  value={password}
  onChange={(e) => setPassword(e.target.value)}
  required
- className="w-full rounded-lg border border-dash-border bg-dash-surface px-4 py-2.5 text-sm outline-none transition focus:border-primary focus:ring-1 focus:ring-primary"
+ className="w-full rounded-lg border border-dash-border bg-dash-surface px-4 py-2.5 pr-10 text-sm outline-none transition focus:border-primary focus:ring-1 focus:ring-primary"
  />
+ <button
+ type="button"
+ onClick={() => setShowPassword(!showPassword)}
+ className="absolute right-3 top-1/2 -translate-y-1/2 text-dash-text2 hover:text-dash-text transition"
+ aria-label={showPassword ? 'Hide password' : 'Show password'}
+ >
+ {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+ </button>
+ </div>
  </div>
  {error && (
- <p className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">{error}</p>
+ <p className="rounded-lg bg-red-100 px-3 py-2 text-xs text-red-900 dark:bg-red-950 dark:text-red-200">{error}</p>
  )}
  <button
  type="submit"
  disabled={loading}
- className="flex w-full items-center justify-center gap-2 rounded-lg bg-dash-inverted px-6 py-3 text-sm font-semibold text-white transition hover:bg-dash-inverted-hover disabled:opacity-50"
+ className="flex w-full items-center justify-center gap-2 rounded-lg bg-white dark:bg-primary px-6 py-3 text-sm font-semibold text-dash-text dark:text-white transition hover:bg-gray-100 dark:hover:bg-primary-hover disabled:opacity-50"
  >
  {loading && <Loader2 className="h-4 w-4 animate-spin" />}
  Sign In

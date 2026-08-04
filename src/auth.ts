@@ -169,6 +169,7 @@ export const authOptions: NextAuthOptions = {
  adapter: MongoDBAdapter(clientPromise),
  session: { strategy: 'jwt' },
  providers,
+ trustHost: true,
  callbacks: {
  session({ session, token }: { session: Session; token: JWT }) {
  if (session.user) {
