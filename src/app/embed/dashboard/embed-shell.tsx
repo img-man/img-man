@@ -248,18 +248,18 @@ export function EmbedDashboardShell({
  <EmbedScopeProvider folderScope={folderScope ?? null}>
  <div
  ref={shellRef}
- className="flex h-screen bg-dash-muted dark:bg-dash-deep text-dash-text dark:text-dash-inverted-text transition-colors overflow-hidden"
+ className="flex h-screen bg-dash-bg text-dash-text transition-colors overflow-hidden"
  >
  {/* Sidebar */}
  {showSidebar && (
  <aside
  suppressHydrationWarning
- className={`shrink-0 flex-col border-r border-dash-border bg-dash-surface dark:bg-dash-inverted transition-all duration-200 ${
+ className={`shrink-0 flex-col border-r border-dash-sidebar-border bg-dash-sidebar transition-all duration-200 ${
  sidebarCollapsed ? 'w-14' : 'w-52'
  }`}
  >
  {/* Brand header */}
- <div className="relative flex h-12 items-center border-b border-dash-border px-3" suppressHydrationWarning>
+ <div className="relative flex h-12 items-center border-b border-dash-sidebar-border px-3" suppressHydrationWarning>
  <div className={`flex items-center gap-2 ${sidebarCollapsed ? 'justify-center w-full' : ''}`} suppressHydrationWarning>
  {embedConfig.showLogo && logoUrl && !logoError ? (
  // eslint-disable-next-line @next/next/no-img-element
@@ -275,10 +275,10 @@ export function EmbedDashboardShell({
  </span>
  )}
  {!sidebarCollapsed && (
- <span className="text-sm font-semibold text-dash-text dark:text-dash-inverted-text truncate">
+ <span className="text-sm font-semibold text-dash-text truncate">
  {embedConfig.showName && orgName
  ? orgName.replace(/workspace/gi, 'Gallery')
- : (brand ?? 'ImageMan')}
+ : (brand ?? 'img-man')}
  </span>
  )}
  </div>
@@ -308,7 +308,7 @@ export function EmbedDashboardShell({
  className={`group relative flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition ${
  active
  ? 'bg-(--im-primary-light) font-semibold text-(--im-primary)'
- : 'text-dash-text2 hover:bg-dash-muted dark:hover:bg-dash-inverted-hover hover:text-dash-text dark:hover:text-dash-inverted-text'
+ : 'text-dash-text2 hover:bg-dash-sidebar-hover hover:text-dash-text'
  } ${sidebarCollapsed ? 'justify-center px-0' : ''}`}
  title={sidebarCollapsed ? tab.label : undefined}
  >
@@ -321,7 +321,7 @@ export function EmbedDashboardShell({
 
  {/* Tooltip when collapsed */}
  {sidebarCollapsed && (
- <span className="pointer-events-none absolute left-full ml-2 hidden whitespace-nowrap rounded-md bg-dash-inverted dark:bg-dash-muted px-2 py-1 text-xs font-medium text-white dark:text-dash-text shadow-lg group-hover:block">
+ <span className="pointer-events-none absolute left-full ml-2 hidden whitespace-nowrap rounded-md bg-dash-inverted dark:bg-dash-muted px-2 py-1 text-xs font-medium text-white shadow-lg group-hover:block">
  {tab.label}
  </span>
  )}
@@ -331,11 +331,11 @@ export function EmbedDashboardShell({
  </nav>
 
  {/* Footer: user + theme */}
- <div className="border-t border-dash-border p-2">
+ <div className="border-t border-dash-sidebar-border p-2">
  {/* Dark / Light toggle */}
  <button
  onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
- className={`flex w-full items-center gap-2 rounded-lg px-3 py-1.5 text-xs text-dash-text2 transition hover:bg-dash-muted dark:hover:bg-dash-inverted-hover hover:text-dash-text dark:hover:text-dash-inverted-text mb-1 ${
+ className={`flex w-full items-center gap-2 rounded-lg px-3 py-1.5 text-xs text-dash-text2 transition hover:bg-dash-sidebar-hover hover:text-dash-text mb-1 ${
  sidebarCollapsed ? 'justify-center px-0' : ''
  }`}
  title={sidebarCollapsed ? (theme === 'dark' ? 'Light mode' : 'Dark mode') : undefined}
@@ -355,13 +355,13 @@ export function EmbedDashboardShell({
  // eslint-disable-next-line @next/next/no-img-element
  <img src={user.image} alt="" className="h-6 w-6 rounded-full" />
  ) : (
- <div className="flex h-6 w-6 items-center justify-center rounded-full bg-dash-badge text-[10px] font-semibold text-dash-text2 dark:text-dash-inverted-text">
+ <div className="flex h-6 w-6 items-center justify-center rounded-full bg-dash-badge text-[10px] font-semibold text-dash-text2">
  {user.name?.charAt(0) ?? '?'}
  </div>
  )}
  {!sidebarCollapsed && (
  <div className="min-w-0 flex-1">
- <p className="truncate text-xs font-medium text-dash-text dark:text-dash-inverted-text">{user.name}</p>
+ <p className="truncate text-xs font-medium text-dash-text">{user.name}</p>
  <p className="truncate text-[10px] text-dash-text2 ">{user.email}</p>
  </div>
  )}
@@ -369,22 +369,27 @@ export function EmbedDashboardShell({
 
  {/* img-man copyright */}
  {!sidebarCollapsed && (
- <p className="mt-2 text-center text-[9px] text-dash-text-muted ">
- Powered by <span className="font-semibold">ImageMan</span>
- </p>
+ <a
+ href="https://img-man.com"
+ target="_blank"
+ rel="noopener noreferrer"
+ className="mt-2 block text-center text-[9px] text-dash-text-muted transition hover:text-dash-text2"
+ >
+ Powered by <span className="font-semibold">img-man</span>
+ </a>
  )}
  </div>
  </aside>
  )}
 
  {showBottomTabs && (
- <div className="absolute inset-x-0 top-0 z-20 border-b border-dash-border bg-dash-surface/95 px-3 py-2 backdrop-blur dark:bg-dash-inverted/95">
+ <div className="absolute inset-x-0 top-0 z-20 border-b border-dash-border bg-dash-sidebar/95 px-3 py-2 backdrop-blur">
  <div className="flex items-center justify-between gap-3">
  <div className="min-w-0">
  <p className="truncate text-xs font-semibold text-dash-text">
  {embedConfig.showName && orgName
  ? orgName.replace(/workspace/gi, 'Gallery')
- : (brand ?? 'ImageMan')}
+ : (brand ?? 'img-man')}
  </p>
  <p className="truncate text-[11px] text-dash-text-muted">
  {activeTabMeta?.label ?? 'Workspace'}
@@ -425,7 +430,7 @@ export function EmbedDashboardShell({
 
  {/* Mobile tab bar (visible on small screens) */}
  {showBottomTabs && (
- <div className="fixed bottom-0 left-0 right-0 z-30 flex border-t border-dash-border bg-dash-surface dark:bg-dash-inverted">
+ <div className="fixed bottom-0 left-0 right-0 z-30 flex border-t border-dash-border bg-dash-sidebar">
  {visibleTabs.map((tab) => {
  const active = tab.key === resolvedActiveTab;
  const Icon = tab.icon;
