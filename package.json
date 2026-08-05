@@ -4,6 +4,14 @@
   "private": true,
   "license": "Apache-2.0",
   "description": "The open-source media operating system: asset management, design, PDF tools, AI, and delivery in one self-hosted stack.",
+  "homepage": "https://github.com/img-man/img-man#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/img-man/img-man.git"
+  },
+  "bugs": {
+    "url": "https://github.com/img-man/img-man/issues"
+  },
   "scripts": {
     "dev": "next dev -p 4000",
     "build": "next build",

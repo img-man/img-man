@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
           redirect: 'follow',
           cache: 'no-store',
           headers: {
-            'User-Agent': 'ImageMan-Favicon-Studio/1.0',
+            'User-Agent': 'img-man-Favicon-Studio/1.0',
           },
         },
         10_000,
@@ -79,7 +79,7 @@ export async function GET(request: NextRequest) {
                 redirect: 'follow',
                 cache: 'no-store',
                 headers: {
-                  'User-Agent': 'ImageMan-Favicon-Studio/1.0',
+                  'User-Agent': 'img-man-Favicon-Studio/1.0',
                 },
               },
               5_000,

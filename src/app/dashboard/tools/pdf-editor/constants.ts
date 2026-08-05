@@ -929,7 +929,7 @@ export const PII_TYPES = [
 export const NL_EDIT_EXAMPLES = [
   'Add my signature at the bottom of page 3',
   'Number all pages starting from 2',
-  'Highlight all mentions of "ImageMan"',
+  'Highlight all mentions of "img-man"',
   'Add a watermark saying "CONFIDENTIAL"',
   'Rotate page 5 by 90 degrees clockwise',
   'Delete all blank pages',

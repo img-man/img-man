@@ -5,7 +5,7 @@ import type { ImgManEditionManifest } from '@img-man/sdk';
 export const COMMUNITY_EDITION_MANIFEST: ImgManEditionManifest = {
   edition: 'community',
   branding: {
-    productName: 'ImageMan',
+    productName: 'img-man',
   },
   navigationGroups: [],
   dashboardExtensions: [],

@@ -75,7 +75,7 @@ export default function GuidesPage() {
  )}
  <div>
  <h1 className="text-lg font-bold text-dash-text">
- {orgName || 'ImageMan'} — Setup Guides
+ {orgName || 'img-man'} — Setup Guides
  </h1>
  <p className="text-xs text-dash-text2">
  {totalGuides} guides to help you get started and make the most of
@@ -163,7 +163,7 @@ export default function GuidesPage() {
  {/* Copyright Footer */}
  <div className="border-t border-dash-border pt-4 text-center">
  <p className="text-[11px] text-dash-text-muted">
- © {new Date().getFullYear()} {orgName || 'ImageMan'}. All rights
+ © {new Date().getFullYear()} {orgName || 'img-man'}. All rights
  reserved.
  </p>
  </div>

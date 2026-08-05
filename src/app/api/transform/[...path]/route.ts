@@ -211,8 +211,8 @@ function buildHeaders(
  'Content-Type': formatToMime(format as 'jpeg' | 'png' | 'webp' | 'avif'),
  'Content-Length': String(sizeBytes),
  'Cache-Control': 'public, max-age=31536000, immutable',
- 'X-ImageMan-Transform': 'processed',
- 'X-ImageMan-Cache': 'miss',
+ 'X-ImgMan-Transform': 'processed',
+ 'X-ImgMan-Cache': 'miss',
  Vary: 'Accept',
  };
 }
@@ -246,7 +246,7 @@ async function serveFromGcs(
  'Content-Type': mimeType,
  'Content-Length': String(buffer.length),
  'Cache-Control': 'public, max-age=31536000, immutable',
- 'X-ImageMan-Transform': 'original',
+ 'X-ImgMan-Transform': 'original',
  },
  });
 }

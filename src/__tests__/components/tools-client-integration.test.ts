@@ -21,7 +21,7 @@ describe('Tools client integration', () => {
 
     expect(mod.default).toBeDefined();
     expect(typeof mod.default).toBe('function');
-    expect(mod.metadata).toEqual({ title: 'PDF Suite — ImageMan' });
+    expect(mod.metadata).toEqual({ title: 'PDF Suite — img-man' });
   });
 
   it('renders grouped workflow sections for the PDF suite view', async () => {

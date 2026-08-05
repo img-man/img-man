@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 /* ─── Built-in Setup Guides ───────────────────────────
  * Pre-written documentation for customers to understand
- * how to use ImageMan: API, white-labeling, transforms, etc.
+ * how to use img-man: API, white-labeling, transforms, etc.
  * ──────────────────────────────────────────────────── */
 
 export interface Guide {
@@ -22,7 +22,7 @@ export interface GuideCategory {
 
 const GUIDE_CONTENT: Record<string, string> = {
  'quick-start': `
-## Welcome to ImageMan
+## Welcome to img-man
 
 img-man is your all-in-one image management and design platform. This guide will walk you through the essential steps to get started — upload your first image, organize with folders, create a design, and share with your team.
 
@@ -85,7 +85,7 @@ Use **Share Links** to distribute assets externally:
 
 ### Next Steps
 
-Explore these guides to unlock the full power of ImageMan:
+Explore these guides to unlock the full power of img-man:
 
 - [API Authentication](/dashboard/docs/api-authentication) — Set up API keys for programmatic access
 - [Image Transformations](/dashboard/docs/image-transforms) — Learn about on-the-fly image processing
@@ -485,7 +485,7 @@ Map your own domain to the img-man dashboard:
 All API responses can be served from your custom domain:
 
 \`\`\`
-https://api.yourdomain.com/v1/assets → proxied to ImageMan
+https://api.yourdomain.com/v1/assets → proxied to img-man
 https://cdn.yourdomain.com/path/image.jpg → served via your CDN
 \`\`\`
 
@@ -613,7 +613,7 @@ To upgrade your plan:
 export const GUIDE_CATEGORIES: GuideCategory[] = [
  {
  name: 'Getting Started',
- description: 'Learn the basics of ImageMan',
+ description: 'Learn the basics of img-man',
  guides: [
  {
  slug: 'quick-start',

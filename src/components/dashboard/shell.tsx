@@ -446,7 +446,7 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
             </span>
             {!sidebarCollapsed && (
               <span className="text-sm font-semibold text-dash-text">
-                ImageMan
+                img-man
               </span>
             )}
           </div>

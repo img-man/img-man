@@ -141,7 +141,7 @@ interface AssetDrawerProps {
     isPublic?: boolean;
     url?: string; // Signed URL — loaded on-demand when drawer opens
     downloadUrl?: string; // Same-origin proxy URL for fetch-based previews
-    publicUrl?: string; // Stable ImageMan-domain URL (redirects to signed)
+    publicUrl?: string; // Stable img-man-domain URL (redirects to signed)
     thumbnailUrl?: string | null;
     thumbnailBase64?: string | null; // Inline base64 from grid for instant preview
     integrityStatus?: 'ok' | 'thumbnail-fallback' | 'missing';

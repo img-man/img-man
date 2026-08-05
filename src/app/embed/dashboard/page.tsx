@@ -14,7 +14,7 @@ import { EmbedDashboardShell } from './embed-shell';
  * - token (required) — Access token (imgt_...) for authentication
  * - folder (optional) — Root folder ID to scope the assets view to
  * - theme (optional) — "dark" | "light" (default: "light")
- * - brand (optional) — Custom brand label (replaces "ImageMan")
+ * - brand (optional) — Custom brand label (replaces "img-man")
  *
  * Sections are determined by the user's sectionAccess in their OrgMembership,
  * not by URL parameters.

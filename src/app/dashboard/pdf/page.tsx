@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import ToolsClient from '../tools/tools-client';
 
-export const metadata = { title: 'PDF Suite — ImageMan' };
+export const metadata = { title: 'PDF Suite — img-man' };
 
 export default function PdfSuitePage() {
   return (

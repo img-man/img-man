@@ -421,7 +421,7 @@ export function ImgManEmbed({
           \`\${data.embedUrl}/embed/dashboard?token=\${encodeURIComponent(data.accessToken)}\`
         );
       } catch (err: unknown) {
-        setError(err instanceof Error ? err.message : 'Failed to load ImageMan');
+        setError(err instanceof Error ? err.message : 'Failed to load img-man');
       }
     })();
   }, [userEmail, userName]);

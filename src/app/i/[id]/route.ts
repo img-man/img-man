@@ -2,7 +2,7 @@
 /**
  * GET /i/:id — Public asset renderer
  *
- * This endpoint is the canonical, ImageMan-domain URL for an asset. It is
+ * This endpoint is the canonical, img-man-domain URL for an asset. It is
  * deliberately lightweight: when no transform parameters are present we issue
  * a 302 redirect to a freshly signed GCS URL so the heavy lifting (bytes) is
  * served directly by the bucket / CDN — not by our app server.

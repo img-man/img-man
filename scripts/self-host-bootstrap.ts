@@ -30,7 +30,7 @@ function buildEnvFile() {
   `ASSET_URL_SIGNING_SECRET=${generateSecret()}`,
   'AUTH_TRUST_HOST=true',
     'MONGODB_URI=mongodb://mongo:27017/imageman',
-  'MONGODB_DB=imageman',
+  'MONGODB_DB=img-man',
   '',
     '# If you run img-man outside Docker Compose, change MONGODB_URI to',
     '# mongodb://localhost:27017/imageman or your Atlas connection string.',

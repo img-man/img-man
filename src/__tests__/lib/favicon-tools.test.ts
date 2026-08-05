@@ -43,13 +43,13 @@ describe('favicon tool helpers', () => {
 
   it('builds a web manifest with maskable icons', () => {
     const manifest = createWebManifest({
-      appName: 'ImageMan',
+      appName: 'img-man',
       shortName: 'IM',
       themeColor: '#123456',
       backgroundColor: '#ffffff',
     });
 
-    expect(manifest.name).toBe('ImageMan');
+    expect(manifest.name).toBe('img-man');
     expect(manifest.short_name).toBe('IM');
     expect(manifest.icons).toEqual(
       expect.arrayContaining([
@@ -61,7 +61,7 @@ describe('favicon tool helpers', () => {
 
   it('creates framework snippets that reference the generated manifest', () => {
     const snippets = createFrameworkSnippets({
-      appName: 'ImageMan',
+      appName: 'img-man',
       themeColor: '#123456',
       backgroundColor: '#ffffff',
     });

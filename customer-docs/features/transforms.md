@@ -41,13 +41,13 @@ The rule is immediately available at `/i/<asset-id>?t=hero-banner`.
 ### Use a preset in a URL
 
 ```
-https://your-org.imageman.app/i/<asset-id>?t=hero-banner
+https://img-man.example.com/i/<asset-id>?t=hero-banner
 ```
 
 You can also stack a preset with additional overrides:
 
 ```
-https://your-org.imageman.app/i/<asset-id>?t=hero-banner&q=70
+https://img-man.example.com/i/<asset-id>?t=hero-banner&q=70
 ```
 
 The inline parameter takes precedence over the preset value for that key.

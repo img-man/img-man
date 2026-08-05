@@ -146,7 +146,7 @@ function getAttributeValue(tag: string, attribute: string): string | undefined {
 
 function createUserAgentHeader() {
   return {
-    'User-Agent': 'ImageMan-Favicon-Studio/1.0',
+    'User-Agent': 'img-man-Favicon-Studio/1.0',
   };
 }
 

@@ -26,7 +26,7 @@ export const TOUR_STEPS: TourStep[] = [
     id: 'welcome',
     selector: null,
     placement: 'center',
-    title: 'Welcome to ImageMan',
+    title: 'Welcome to img-man',
     body: 'Upload, organize, design, and deliver — in one place. This 90-second tour shows you the basics.',
   },
   {

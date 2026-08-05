@@ -642,7 +642,7 @@ export default function FaviconToolsClient() {
               Generate packages, inspect live sites, and ship icons from one surface.
             </h1>
             <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-300">
-              This studio folds the favicon repo into ImageMan-native tooling: package export,
+              This studio folds the favicon repo into img-man-native tooling: package export,
               PNG and ICO outputs, emoji source generation, remote site fetching, analysis,
               SVG cleanup, and implementation snippets.
             </p>
@@ -759,14 +759,14 @@ export default function FaviconToolsClient() {
                   <TextInput
                     value={packageConfig.appName}
                     onChange={(value) => setPackageConfig((current) => ({ ...current, appName: value }))}
-                    placeholder="ImageMan"
+                    placeholder="img-man"
                   />
                 </Field>
                 <Field label="Short name">
                   <TextInput
                     value={packageConfig.shortName || ''}
                     onChange={(value) => setPackageConfig((current) => ({ ...current, shortName: value }))}
-                    placeholder="ImageMan"
+                    placeholder="img-man"
                   />
                 </Field>
                 <Field label="Theme color">

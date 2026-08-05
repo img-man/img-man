@@ -233,7 +233,7 @@ export default function SharePage() {
  href="/"
  className="mt-6 inline-block rounded-lg bg-dash-inverted px-4 py-2 text-sm font-medium text-white hover:bg-dash-inverted-hover"
  >
- Go to ImageMan
+ Go to img-man
  </Link>
  </div>
  </div>

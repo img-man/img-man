@@ -69,7 +69,7 @@ export interface EmailBranding {
 
 /** Default branding when org has none configured */
 export const DEFAULT_BRANDING: EmailBranding = {
-  orgName: 'ImageMan',
+  orgName: 'img-man',
   logoUrl: null,
   primaryColor: '#7C3AED',
   accentColor: '#2563EB',

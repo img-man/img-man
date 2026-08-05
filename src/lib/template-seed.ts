@@ -540,7 +540,7 @@ function emailFooterCompact(): DesignState {
     background: '#FAFAF9',
     elements: [
       rect('divider', 80, 0, 1040, 4, '#E2E8F0'),
-      text('brand', 80, 60, 540, 40, 'ImageMan', {
+      text('brand', 80, 60, 540, 40, 'img-man', {
         fontSize: 28, fontWeight: '700', color: '#0F172A',
       }),
       text('tagline', 80, 110, 540, 60, 'Image management & design that actually ships.', {

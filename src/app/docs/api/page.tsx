@@ -184,7 +184,7 @@ const ENDPOINTS: Record<string, Endpoint[]> = {
  },
  response: `{ "uploadUrl": "https://storage...", "assetId": "...", "storageKey": "...", "url": "https://storage...", "publicUrl": "https://app.imageman.io/i/<id>" }
 
-// publicUrl is the stable, ImageMan-domain link. It 302-redirects to a fresh
+// publicUrl is the stable, img-man-domain link. It 302-redirects to a fresh
 // signed GCS URL. Append transform params (?w=400&h=300&format=webp&q=85)
 // to get a resized variant on the fly.`,
  },

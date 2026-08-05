@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 /**
- * Asset URL helpers — build ImageMan-domain public URLs for assets so that we
+ * Asset URL helpers — build img-man-domain public URLs for assets so that we
  * never expose raw GCS signed URLs to end users. The public URL fast-redirects
  * to a freshly signed GCS URL (or, when transform params are present, streams
  * a resized variant) via the `/i/[id]` route.
@@ -58,7 +58,7 @@ function getAppBaseUrl(): string {
 }
 
 /**
- * Build a stable, ImageMan-domain URL for an asset. Optionally pass transform
+ * Build a stable, img-man-domain URL for an asset. Optionally pass transform
  * options that the renderer route will apply on the fly.
  *
  *   getPublicAssetUrl('abc123')

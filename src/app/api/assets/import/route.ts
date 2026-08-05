@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
 
  // Download the file
  const response = await fetch(url, {
- headers: { 'User-Agent': 'ImageMan-Importer/1.0' },
+ headers: { 'User-Agent': 'img-man-Importer/1.0' },
  signal: AbortSignal.timeout(30000), // 30s timeout
  });
 

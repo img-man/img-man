@@ -83,7 +83,7 @@ export default function GuideViewPage({
  </div>
  )}
  <span className="text-sm font-semibold text-dash-text">
- {orgName ?? 'ImageMan'}
+ {orgName ?? 'img-man'}
  </span>
  </div>
 
@@ -113,7 +113,7 @@ export default function GuideViewPage({
  {/* Copyright Footer */}
  <div className="border-t border-dash-border px-6 py-4 text-center">
  <p className="text-[11px] text-dash-text-muted">
- © {new Date().getFullYear()} {orgName ?? 'ImageMan'}. All rights
+ © {new Date().getFullYear()} {orgName ?? 'img-man'}. All rights
  reserved.
  </p>
  </div>

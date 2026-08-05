@@ -77,7 +77,7 @@ export default function InviteAcceptPage() {
             <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center text-white text-lg font-black">
               IM
             </div>
-            ImageMan
+            img-man
           </div>
         </div>
 
@@ -169,7 +169,7 @@ export default function InviteAcceptPage() {
 
         {/* Footer */}
         <p className="text-center text-xs text-dash-text-muted mt-6">
-          Secure invite system powered by ImageMan
+          Secure invite system powered by img-man
         </p>
       </div>
     </div>

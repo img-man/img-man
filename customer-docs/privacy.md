@@ -18,11 +18,16 @@ Your responsibilities:
 
 ---
 
-## Cloud-support customers
+## Who processes your data
 
-If you are on the Cloud Setup & Operations Support plan, img-man acts as a **data processor** only for the configuration and diagnostic information you share during support interactions (e.g., a diagnostics bundle exported from the dashboard). Your asset data remains in your own storage bucket.
+Nobody but you. img-man is software you run on your own infrastructure — there
+is no hosted service behind it, no vendor account, and no support plan under
+which anyone else would process your data. That also means there is no
+counterparty to sign a Data Processing Agreement with; for the software itself
+you have the Apache-2.0 licence and nothing more is required.
 
-A Data Processing Agreement (DPA) template is available on request at `security@imageman.io`.
+If you share a diagnostics bundle when reporting a bug, treat it like any other
+attachment: check what is in it first. It can contain configuration values.
 
 ---
 
@@ -74,7 +79,7 @@ To request deletion of your user account, go to **Settings → Account → Delet
 
 **Self-hosted:** Your data is in whatever region you deploy your server and storage bucket. img-man does not copy or replicate your data outside that region.
 
-**Telemetry (opt-in):** Anonymized telemetry events are processed at `telemetry.imageman.io` which is hosted in the United States (GCP us-central1). No personal data or content is included in telemetry events.
+**Telemetry:** None. img-man has no analytics SDK, usage beacon, crash reporter, or licence check, so there is no telemetry destination and nothing to opt out of. See [Telemetry](telemetry.md) for the full list of hosts a running instance contacts and how to verify it yourself.
 
 ---
 
@@ -101,22 +106,25 @@ img-man uses one session cookie (`next-auth.session-token`) per authenticated us
 - Scoped to your instance's domain.
 - Used only for authentication.
 
-No third-party tracking cookies or pixels are used in the dashboard. If telemetry is enabled, the single outbound event described above is the only external call.
+No third-party tracking cookies or pixels are used in the dashboard.
 
 ---
 
 ## GDPR posture
 
-- **Self-hosted:** You are the data controller. Standard Contractual Clauses are not required because data transfer is solely within your own infrastructure.
-- **Cloud-support plan:** img-man is your processor for support interactions only. DPA available on request.
-- **Telemetry:** No personal data is included in telemetry events. Opt-out means zero data transfer.
+- **Controller:** You are, for everything in your instance. There is no vendor acting as processor, so no DPA and no Standard Contractual Clauses are needed for img-man itself.
+- **Transfers:** Data moves only between the components you configure — your database, your bucket, and any AI or integration provider whose key you supply. Those providers' own terms govern what they receive.
+- **Telemetry:** None is collected, so there is no telemetry data to disclose, export, or delete.
 
 ---
 
 ## Contact
 
-For privacy questions, deletion requests that cannot be completed through the dashboard, or DPA requests:
+You run this instance, so you are the data controller for everything in it — no
+one else can read, export, or delete your data on your behalf.
 
-**Email:** `security@imageman.io`
+For questions about the software itself, open a GitHub issue. For anything
+security-sensitive, follow the private reporting process in `SECURITY.md`
+rather than filing a public issue.
 
 **Related:** [Telemetry](telemetry.md) · [Audit log](audit-log.md) · [Backup & restore](backup-restore.md) · [Trash & Vault](features/vault.md)

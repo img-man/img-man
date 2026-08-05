@@ -12,7 +12,7 @@ describe('edition manifest contract', () => {
   it('defines a typed community manifest', () => {
     const manifest: ImgManEditionManifest = COMMUNITY_EDITION_MANIFEST;
     expect(manifest.edition).toBe('community');
-    expect(manifest.branding?.productName).toBe('ImageMan');
+    expect(manifest.branding?.productName).toBe('img-man');
   });
 
   it('allows matching editions', () => {
