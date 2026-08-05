@@ -5,17 +5,22 @@
  * Provides a simple API to embed the img-man widget in any web application.
  *
  * Usage:
- *   <script src="https://your-domain.com/sdk/imageman.js"></script>
- *   <script>
- *     const widget = new img-man.Widget({
- *       container: '#imageman-container',
- *       orgSlug: 'acme-corp',
- *       apiKey: 'img_xyz789',
- *       mode: 'picker',
- *       onSelect: (assets) => console.log('Selected:', assets),
- *     });
- *     widget.open();
- *   </script>
+ *   import { ImgManWidget } from '@img-man/sdk';
+ *
+ *   const widget = new ImgManWidget({
+ *     container: '#imgman-container',
+ *     orgSlug: 'acme-corp',
+ *     apiKey: 'img_xyz789',
+ *     mode: 'picker',
+ *     onSelect: (assets) => console.log('Selected:', assets),
+ *   });
+ *   widget.open();
+ *
+ * Loaded from a <script> tag instead, the same class is at `ImageMan.Widget`
+ * (`img-man` is not a valid JS identifier, so the global keeps the old name).
+ *
+ * This surface takes the org API key in the browser. Prefer the server-minted
+ * token flow in customer-docs/features/embed.md for anything user-facing.
  */
 
 export interface ImgManWidgetConfig {

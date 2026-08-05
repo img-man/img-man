@@ -79,20 +79,28 @@ describe('customer docs helpers', () => {
     }
   }, 20_000);
 
-  it('keeps the published embed guide aligned with the actual widget API', async () => {
+  it('keeps the published embed guide on the token flow, with the API key server-side', async () => {
     const embedDocPath = path.join(process.cwd(), 'customer-docs', 'features', 'embed.md');
     const content = await fs.readFile(embedDocPath, 'utf8');
 
-    expect(content).toContain('new img-man.Widget({');
-    expect(content).toContain("import { ImgManWidget } from '@img-man/sdk';");
-    expect(content).toContain('onUpload: (asset) =>');
-    expect(content).toContain('onSelect: (assets) =>');
-    expect(content).toContain("import { useEffect, useRef } from 'react';");
-    expect(content).toContain("import { ref, onMounted, onUnmounted } from 'vue';");
-    expect(content).toContain("widgetRef.current?.destroy()");
-    expect(content).toContain("onUnmounted(() => widget?.destroy())");
-    expect(content).not.toContain('const im = new ImageMan({');
-    expect(content).not.toContain("im.on('upload-complete'");
+    // The documented path must be the server-minted token, not a raw API key
+    // in the browser. These are the exact strings an integrator copies.
+    expect(content).toContain('/api/v1/auth/token');
+    expect(content).toContain('Authorization: `Bearer ${process.env.IMGMAN_API_KEY}`');
+    expect(content).toContain('/embed/dashboard?token=');
+    expect(content).toContain('encodeURIComponent(token)');
+
+    // Framework prefixes publish a variable to the browser bundle. An org API
+    // key behind one of these is readable by every visitor, so the guide must
+    // never show the key that way.
+    for (const clientPrefix of ['NEXT_PUBLIC_IMGMAN_API_KEY', 'VITE_IMGMAN_API_KEY', 'REACT_APP_IMGMAN_API_KEY']) {
+      expect(content).not.toContain(clientPrefix);
+    }
+
+    // 'img-man' is not a valid JS identifier — `new img-man.Widget()` is a
+    // syntax error. A rename swept the old `ImageMan.Widget` global into this
+    // shape once already; fail loudly if it happens again.
+    expect(content).not.toMatch(/\bnew\s+img-man\./);
   });
 
   it('keeps the published API quickstart aligned with the supported search and transform surfaces', async () => {

@@ -1,157 +1,172 @@
-# Embed SDK
+# Embed
 
-> **Status:** PUBLISHED
-> **Last updated:** 2026-05-04
-> **Applies to:** Pro and above (API key required)
+Run the img-man dashboard inside your own application, signed in as your own
+user. No second login, no second password, no second user directory.
 
-## What it does
+## How it works
 
-The img-man Embed SDK is a drop-in widget your site can use to let users pick or upload assets to your img-man organization without leaving your page.
+Three pieces. Your API key stays on your server the whole time.
 
-## When to use it
+```
+Browser                    Your server                  img-man
+   |                            |                          |
+   |  1. who am I? (session)    |                          |
+   |--------------------------->|                          |
+   |                            |  2. POST /api/v1/auth/token
+   |                            |     Authorization: Bearer img_…
+   |                            |     { email, name }      |
+   |                            |------------------------->|
+   |                            |                          | finds or creates
+   |                            |   { accessToken }        | that user
+   |                            |<-------------------------|
+   |  3. { accessToken }        |                          |
+   |<---------------------------|                          |
+   |                                                       |
+   |  4. <iframe src="…/embed/dashboard?token=…">          |
+   |------------------------------------------------------>|
+```
 
-- A SaaS form needs a reliable image picker / uploader.
-- You want users to upload directly to img-man storage without your server proxying bytes.
-- You need a branded, white-labeled flow inside your own product.
+The token is short-lived and scoped to one user. The API key — which is *not*
+short-lived and *not* scoped to one user — never leaves your server.
 
-## Step-by-step
+**An email img-man has not seen before is provisioned on first use**, with the
+role set in **Settings → Integrations → Default role for new users**. Your
+users never see an img-man login screen.
 
-1. In the dashboard, go to **Settings → API Keys** and create a key.
-   Use **read** scope for a picker-only flow or **write** if the widget also needs to upload.
-2. Add the SDK script to your page and create a container for the iframe:
-   ```html
-   <div id="imageman-container" style="width: 100%; height: 500px"></div>
-   <script src="https://<your-imageman-host>/sdk/imageman.js"></script>
-   ```
-3. Mount the widget with the published script-tag surface:
-   ```html
-   <script>
-     const widget = new img-man.Widget({
-       container: '#imageman-container',
-       orgSlug: 'acme-corp',
-       apiKey: 'IM_KEY_...',
-       mode: 'uploader',
-       onUpload: (asset) => {
-         document.querySelector('input[name=image]').value = asset.url;
-       },
-       onError: (error) => {
-         console.error('img-man widget error', error);
-       },
-     });
+## Setup
 
-     widget.open();
-   </script>
-   ```
-4. For npm or framework apps, install the package and use the named export:
-   ```ts
-   import { ImgManWidget } from '@img-man/sdk';
+### 1. Create an API key
 
-   const widget = new ImgManWidget({
-     container: document.getElementById('imageman-container'),
-     orgSlug: 'acme-corp',
-     apiKey: 'IM_KEY_...',
-     mode: 'picker',
-     onSelect: (assets) => {
-       console.log('Selected assets', assets);
-     },
-   });
+In img-man: **Settings → API Keys → Create key**. Copy it — it is shown once.
 
-   widget.open();
-   ```
-5. Submit your form or save the selected asset. The returned `asset.url` is a stable [public asset URL](public-asset-url.md).
+### 2. Configure your server
 
-## Framework examples
+```bash
+IMGMAN_BASE_URL="https://img-man.example.com"
+IMGMAN_API_KEY="img_…"
+```
 
-### React
+Both are server-side only. If your framework has a convention for exposing
+variables to the browser (`NEXT_PUBLIC_`, `VITE_`, `REACT_APP_`), **do not use
+it for these**.
 
-```tsx
-import { useEffect, useRef } from 'react';
-import { ImgManWidget } from '@img-man/sdk';
+### 3. Add one endpoint to your server
 
-function AssetPicker({ onSelect }) {
-  const containerRef = useRef(null);
-  const widgetRef = useRef(null);
+It answers: *who is signed in right now, and what is their img-man token?*
+Node/Express shown; the shape is the same anywhere.
+
+```js
+app.post('/api/imgman/token', async (req, res) => {
+  // Whatever "the current user" means in your app.
+  const user = await getSignedInUser(req);
+  if (!user) return res.status(401).json({ error: 'Not signed in' });
+
+  const response = await fetch(`${process.env.IMGMAN_BASE_URL}/api/v1/auth/token`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${process.env.IMGMAN_API_KEY}`,
+    },
+    body: JSON.stringify({
+      email: user.email,
+      name: user.name,
+      expiresIn: '24h',
+    }),
+  });
+
+  const data = await response.json();
+  if (!response.ok) {
+    return res.status(response.status).json({ error: data.error });
+  }
+
+  res.json({ accessToken: data.accessToken });
+});
+```
+
+Take the identity from your **server-side session**, never from the request
+body. If the browser can name the user, anyone can request a token as anyone.
+
+### 4. Render the iframe
+
+```jsx
+function MediaLibrary() {
+  const [token, setToken] = useState(null);
 
   useEffect(() => {
-    if (!containerRef.current) return;
+    fetch('/api/imgman/token', { method: 'POST', credentials: 'include' })
+      .then((r) => r.json())
+      .then((d) => setToken(d.accessToken));
+  }, []);
 
-    widgetRef.current = new ImgManWidget({
-      container: containerRef.current,
-      orgSlug: 'acme-corp',
-      apiKey: import.meta.env.VITE_IMAGEMAN_API_KEY,
-      mode: 'picker',
-      maxFiles: 3,
-      onSelect,
-    });
+  if (!token) return <p>Loading…</p>;
 
-    widgetRef.current.open();
-    return () => widgetRef.current?.destroy();
-  }, [onSelect]);
-
-  return <div ref={containerRef} style={{ width: '100%', height: 500 }} />;
+  return (
+    <iframe
+      src={`https://img-man.example.com/embed/dashboard?token=${encodeURIComponent(token)}`}
+      style={{ width: '100%', height: '80vh', border: 0 }}
+      title="Media library"
+    />
+  );
 }
 ```
 
-### Vue
+That is the whole integration: two environment variables, one endpoint, one
+iframe.
 
-```vue
-<template>
-  <div ref="container" style="width: 100%; height: 500px" />
-</template>
+## Options
 
-<script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
-import { ImgManWidget } from '@img-man/sdk';
+Query parameters on `/embed/dashboard`:
 
-const container = ref(null);
-const emit = defineEmits(['select']);
-let widget = null;
+| Parameter | What it does |
+| --- | --- |
+| `token` | **Required.** The access token from step 3. |
+| `folder` | Restrict the embed to one folder and its children. |
+| `theme` | `light` or `dark`. |
+| `brand` | Hex accent colour without the `#`, e.g. `brand=7C3AED`. |
 
-onMounted(() => {
-  widget = new ImgManWidget({
-    container: container.value,
-    orgSlug: 'acme-corp',
-    apiKey: import.meta.env.VITE_IMAGEMAN_API_KEY,
-    mode: 'picker',
-    onSelect: (assets) => emit('select', assets),
-  });
+## Restricting who gets provisioned
 
-  widget.open();
-});
+Under **Settings → Integrations**:
 
-onUnmounted(() => widget?.destroy());
-</script>
-```
+- **Default role for new users** — `editor` or `viewer`.
+- **Allowed email domains** — when set, an address outside these domains is
+  refused with `403` instead of being provisioned.
 
-## Modes
-
-| Mode | What it shows | Typical use |
-| --- | --- | --- |
-| `picker` | The asset library. | Letting users select an existing asset. |
-| `uploader` | Upload UI only. | Capturing fresh uploads (camera, file). |
-| `full` | Picker + uploader + tabs. | A complete media flow inside your app. |
-
-## Tips & limits
-
-- Add your domain to **Settings → Integrations → Allowed origins**, otherwise the API key will be refused with CORS.
-- The widget supports drag-and-drop, paste, and URL import out of the box.
-- Use `onSelect` for picker/full flows and `onUpload` for uploader/full flows.
-- Theme it via the `theme` option, then update it later with `widget.setTheme(...)` if your app theme changes at runtime.
-- In React or Vue, create the widget after the container element exists and destroy it on unmount.
+Note that the domain check only applies to users img-man has not seen. Adding
+someone to the organization by other means — an invite, for example — makes
+that check no longer apply to them, so do not treat an invite flow as a way to
+work around a `403`.
 
 ## Troubleshooting
 
-| Problem | Cause | Fix |
+| Response | Cause | Fix |
 | --- | --- | --- |
-| `img-man is not defined` | The SDK script did not load before your widget code ran. | Load `/sdk/imageman.js` first, then create `new img-man.Widget(...)`. |
-| `container not found` | The selector in `container` does not match a real element. | Create the container div before calling `new img-man.Widget(...)`, or pass the actual `HTMLElement`. |
-| The widget duplicates itself after a re-render | The framework recreated the widget without tearing down the old instance. | Keep the widget in a ref and call `destroy()` during unmount or effect cleanup. |
-| `CORS blocked` in console | Your origin isn't whitelisted. | Add it under Settings → Integrations. |
-| `401 Unauthorized` on upload | API key has wrong scope. | Re-issue with `write` scope. |
-| Upload seems to succeed but `asset.url` is empty | Older SDK version that doesn't surface `publicUrl`. | Update to the current SDK build. |
+| `401` from your own endpoint | No signed-in session on the request. | Send session cookies (`credentials: 'include'`) or your own auth header. |
+| `401` from img-man | API key wrong, revoked, or absent. | Check `IMGMAN_API_KEY`. Send it as `Authorization: Bearer img_…`. |
+| `403` from img-man | Email is outside **Allowed email domains**. | Add the domain, or provision the user deliberately. |
+| `404` from img-man | The API key does not belong to any organization. | Re-issue the key. |
+| Blank iframe | Token missing, expired, or not URL-encoded. | `encodeURIComponent(token)`. Mint a fresh one. |
+| Iframe refuses to load | Your origin is not allowed to frame img-man. | Add it under **Settings → Integrations → Allowed origins**. |
+
+Check reachability from your server, not your laptop:
+
+```bash
+curl -s -o /dev/null -w '%{http_code}\n' "$IMGMAN_BASE_URL/api/health/live"
+```
+
+## The picker widget
+
+There is a second, narrower surface at `/embed` — an asset picker that takes
+`orgSlug` and `apiKey` as **query parameters**.
+
+Prefer the token flow above. A URL parameter is not a secret: it lands in
+browser history, `Referer` headers, and any proxy or access log along the way,
+and an org API key is neither short-lived nor scoped to one user. Reach for
+`/embed` only for an internal tool on a trusted network, and issue it a
+read-scoped key.
 
 ## Related
 
 - [API keys](api-keys.md)
-- [Public asset URL](public-asset-url.md)
-- API Playground — available in-app at `/dashboard/api-playground`.
+- [Team & roles](team.md)
+- [Public asset URLs](public-asset-url.md)
