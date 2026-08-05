@@ -107,3 +107,19 @@ export function getPublicAssetUrl(
   const fullPath = qs ? `${path}?${qs}` : path;
   return base ? `${base}${fullPath}` : fullPath;
 }
+
+/**
+ * Resolve a possibly-relative asset URL to an absolute one for display or
+ * copy-to-clipboard. getPublicAssetUrl() returns a bare `/i/<id>` path
+ * whenever NEXT_PUBLIC_APP_URL/NEXTAUTH_URL is unset or points at localhost
+ * — deliberately, so <img> tags stay same-origin for CSP. That's fine for
+ * serving the image, but a relative path is useless once copied outside the
+ * app. Client-only: falls back to the raw value during SSR, where there is
+ * no window to resolve against.
+ */
+export function toAbsoluteAssetUrl(url: string): string {
+  if (typeof window === 'undefined' || /^https?:\/\//i.test(url)) {
+    return url;
+  }
+  return new URL(url, window.location.origin).toString();
+}

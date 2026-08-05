@@ -32,8 +32,16 @@ import {
   Eye,
   ExternalLink,
   AlertTriangle,
+  Zap,
+  BarChart3,
+  SlidersHorizontal,
+  Clock,
+  Check,
+  Minus,
+  type LucideIcon,
 } from 'lucide-react';
 import AiBadge from '@/components/ai-badge';
+import { toAbsoluteAssetUrl } from '@/lib/asset-url';
 import { ImageViewer } from './image-viewer';
 import { ShareDialog } from './share-dialog';
 import { TransformPreview } from './transform-preview';
@@ -233,6 +241,82 @@ function getDownloadOptions(
   return options;
 }
 
+/* ─── URL info tooltip ───────────────────────────────────────────
+ * Small hover/focus popover explaining the tradeoff between the direct
+ * storage link and the img-man redirect link. Built inline rather than
+ * pulled from a UI kit — there's no existing tooltip primitive in this
+ * codebase and a native `title` attribute can't render a bullet list.
+ */
+
+interface UrlInfoPoint {
+  icon: LucideIcon;
+  positive: boolean;
+  text: string;
+}
+
+const PUBLIC_URL_INFO: UrlInfoPoint[] = [
+  { icon: Zap, positive: true, text: 'Faster — goes straight to storage, no redirect hop.' },
+  { icon: Clock, positive: false, text: 'Expires — a signed link, valid for a limited time. Reopen this drawer for a fresh one.' },
+  { icon: Minus, positive: false, text: 'Not tracked — bypasses img-man analytics.' },
+];
+
+const IMGMAN_URL_INFO: UrlInfoPoint[] = [
+  { icon: Check, positive: true, text: 'Stable — never expires, safe to store or hardcode.' },
+  { icon: SlidersHorizontal, positive: true, text: 'Transforms — resize, crop, or reformat via query params.' },
+  { icon: BarChart3, positive: true, text: 'Analytics — views count toward this asset’s usage.' },
+  { icon: Clock, positive: false, text: 'A touch slower — redirects to a signed link before the asset streams.' },
+];
+
+function InfoTooltip({ title, points }: { title: string; points: UrlInfoPoint[] }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <span
+      className="relative inline-flex shrink-0"
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
+    >
+      <button
+        type="button"
+        onFocus={() => setOpen(true)}
+        onBlur={() => setOpen(false)}
+        onClick={() => setOpen((o) => !o)}
+        className="flex items-center justify-center rounded-full p-0.5 text-dash-text-muted transition hover:text-dash-text2"
+        aria-label={`About the ${title}`}
+      >
+        <Info className="h-3 w-3" />
+      </button>
+      {open && (
+        <div
+          role="tooltip"
+          className="absolute left-0 top-full z-20 mt-1.5 w-60 max-w-[80vw] rounded-lg border border-dash-border bg-dash-surface p-2.5 text-left shadow-xl"
+        >
+          <p className="text-[11px] font-semibold text-dash-text">{title}</p>
+          <ul className="mt-1.5 space-y-1.5">
+            {points.map((point, i) => {
+              const PointIcon = point.icon;
+              return (
+                <li key={i} className="flex items-start gap-1.5">
+                  <PointIcon
+                    className={`mt-0.5 h-3 w-3 shrink-0 ${
+                      point.positive
+                        ? 'text-emerald-500 dark:text-emerald-400'
+                        : 'text-dash-text-muted'
+                    }`}
+                  />
+                  <span className="text-[10px] leading-snug text-dash-text2">
+                    {point.text}
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
+    </span>
+  );
+}
+
 /* ─── Component ───────────────────────────────────────────────── */
 
 export function AssetDrawer({
@@ -318,7 +402,9 @@ export function AssetDrawer({
   const [downloading, setDownloading] = useState(false);
 
   // Copy feedback state
-  const [copiedField, setCopiedField] = useState<'id' | 'url' | null>(null);
+  const [copiedField, setCopiedField] = useState<
+    'id' | 'directUrl' | 'imgmanUrl' | null
+  >(null);
 
   // Fullscreen viewer state
   const [showViewer, setShowViewer] = useState(false);
@@ -1382,29 +1468,59 @@ export function AssetDrawer({
             )}
           </div>
 
-          {(asset.publicUrl || asset.url) && (
-            <div className="mt-2 flex items-center gap-2">
+          {asset.url && (
+            <div className="mt-2 flex items-center gap-1.5">
               <span className="text-xs font-medium text-dash-text2">
-                Asset URL
+                Public URL
               </span>
+              <InfoTooltip title="Public URL" points={PUBLIC_URL_INFO} />
               <button
                 onClick={() => {
-                  const shareUrl = asset.publicUrl || asset.url!;
+                  const shareUrl = toAbsoluteAssetUrl(asset.url!);
                   navigator.clipboard.writeText(shareUrl);
-                  setCopiedField('url');
+                  setCopiedField('directUrl');
+                  setTimeout(() => setCopiedField(null), 2000);
+                }}
+                className="flex min-w-0 items-center gap-1 rounded-md px-2 py-0.5 text-xs text-dash-text2 transition hover:bg-dash-surface-hover"
+                title="Copy direct storage URL"
+              >
+                <span className="max-w-[220px] truncate text-[10px] font-mono text-dash-text2">
+                  {toAbsoluteAssetUrl(asset.url)}
+                </span>
+                <Copy className="h-3 w-3 shrink-0" />
+              </button>
+              {copiedField === 'directUrl' && (
+                <span className="text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
+                  Copied!
+                </span>
+              )}
+            </div>
+          )}
+
+          {asset.publicUrl && (
+            <div className="mt-2 flex items-center gap-1.5">
+              <span className="text-xs font-medium text-dash-text2">
+                img-man URL
+              </span>
+              <InfoTooltip title="img-man URL" points={IMGMAN_URL_INFO} />
+              <button
+                onClick={() => {
+                  const shareUrl = toAbsoluteAssetUrl(asset.publicUrl!);
+                  navigator.clipboard.writeText(shareUrl);
+                  setCopiedField('imgmanUrl');
                   setTimeout(() => setCopiedField(null), 2000);
                 }}
                 className="flex min-w-0 items-center gap-1 rounded-md px-2 py-0.5 text-xs text-dash-text2 transition hover:bg-dash-surface-hover"
                 title="Copy img-man asset URL"
               >
                 <span className="max-w-[220px] truncate text-[10px] font-mono text-dash-text2">
-                  {asset.publicUrl || asset.url}
+                  {toAbsoluteAssetUrl(asset.publicUrl)}
                 </span>
                 <Copy className="h-3 w-3 shrink-0" />
               </button>
-              {copiedField === 'url' && (
+              {copiedField === 'imgmanUrl' && (
                 <span className="text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
-                  URL copied!
+                  Copied!
                 </span>
               )}
             </div>
@@ -2333,9 +2449,9 @@ export function AssetDrawer({
             {(asset.publicUrl || asset.url) && (
               <button
                 onClick={() => {
-                  const shareUrl = asset.publicUrl || asset.url!;
+                  const shareUrl = toAbsoluteAssetUrl(asset.publicUrl || asset.url!);
                   navigator.clipboard.writeText(shareUrl);
-                  setCopiedField('url');
+                  setCopiedField('imgmanUrl');
                   setTimeout(() => setCopiedField(null), 2000);
                 }}
                 className="flex items-center justify-center gap-1.5 rounded-lg border border-dash-border px-3 py-2 text-xs font-semibold transition hover:border-dash-border-hover text-dash-text"
