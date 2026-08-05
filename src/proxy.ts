@@ -4,10 +4,21 @@ import type { NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 
 export async function proxy(request: NextRequest) {
- const token = await getToken({
- req: request,
- secret: process.env.NEXTAUTH_SECRET,
- });
+ // getToken() throws on a malformed Authorization header rather than
+ // returning null (GHSA in @auth/core <=0.34.x, which next-auth v4 pins).
+ // This runs on every matched request, and the embed sends
+ // `Authorization: Bearer imgt_...` to /api/assets/*, so an unhandled throw
+ // here is a pre-auth 500 on request paths a caller fully controls.
+ // A token we cannot read is simply an unauthenticated request.
+ let token = null;
+ try {
+  token = await getToken({
+   req: request,
+   secret: process.env.NEXTAUTH_SECRET,
+  });
+ } catch {
+  token = null;
+ }
 
  const { pathname } = request.nextUrl;
 
