@@ -23,12 +23,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/shivam411/ImageMan.git",
+    "url": "https://github.com/img-man/img-man.git",
     "directory": "packages/imageman-mcp-server"
   },
-  "homepage": "https://github.com/shivam411/ImageMan/tree/main/packages/imageman-mcp-server#readme",
+  "homepage": "https://github.com/img-man/img-man/tree/main/packages/imageman-mcp-server#readme",
   "bugs": {
-    "url": "https://github.com/shivam411/ImageMan/issues"
+    "url": "https://github.com/img-man/img-man/issues"
   },
   "keywords": ["imageman", "mcp", "model-context-protocol", "ai", "tools"],
   "publishConfig": {

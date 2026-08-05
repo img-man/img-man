@@ -6,7 +6,7 @@
 
 ## What it does
 
-Every asset has a stable, ImageMan-domain URL of the form `https://<your-imageman-host>/i/<asset-id>`. You can append query parameters to resize or convert the image without re-uploading.
+Every asset has a stable, img-man-domain URL of the form `https://<your-img-man-host>/i/<asset-id>`. You can append query parameters to resize or convert the image without re-uploading.
 
 ## When to use it
 

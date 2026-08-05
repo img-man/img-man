@@ -29,7 +29,7 @@ The bundled server exposes 8 tools. They map 1:1 to the same REST endpoints the 
 | `imageman.ai.image.generate` | write | Text-to-image into the org library (costs credits). |
 | `imageman.ai.image.edit` | write | Inpaint / outpaint / style-edit an existing asset. |
 
-The full machine-readable contract lives in [`@imageman/sdk` → `src/agent/tools.ts`](https://github.com/shivam411/ImageMan/blob/main/packages/imageman-sdk/src/agent/tools.ts) and is the single source of truth — adding a tool there automatically makes it available over MCP.
+The full machine-readable contract lives in [`@img-man/sdk` → `src/agent/tools.ts`](https://github.com/img-man/img-man/blob/main/packages/imageman-sdk/src/agent/tools.ts) and is the single source of truth — adding a tool there automatically makes it available over MCP.
 
 ## Step-by-step — Install
 

@@ -19,7 +19,7 @@ Shows the current self-host evaluation paths for img-man using either a one-comm
 
 1. **Start Docker** — make sure Docker Desktop or the Docker engine is running before you start img-man.
 2. **Fastest path: run the published image** — run `docker run --rm -p 3000:3000 imageman/imageman:latest`.
-3. **Open ImageMan** — visit `http://localhost:3000`.
+3. **Open img-man** — visit `http://localhost:3000`.
 4. **Check health** — use `http://localhost:3000/api/health/live` for liveness and `http://localhost:3000/api/health/ready` for readiness.
 5. **If you want stable local secrets or custom env vars, use Docker Compose instead** — run `node --experimental-strip-types scripts/self-host-bootstrap.ts --file .env.self-host`, then `docker compose --env-file .env.self-host up --build`.
 6. **Stop the stack** — stop the container with `Ctrl+C` for `docker run`, or `docker compose down -v --remove-orphans` for the Compose path.

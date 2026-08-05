@@ -16,7 +16,7 @@ Replays a fixed set of 10 canonical user prompts against the in-app agent (or an
 
 ## The 10 canonical tasks
 
-The task set lives in [`scripts/eval-tasks.json`](https://github.com/shivam411/ImageMan/blob/main/scripts/eval-tasks.json). Categories:
+The task set lives in [`scripts/eval-tasks.json`](https://github.com/img-man/img-man/blob/main/scripts/eval-tasks.json). Categories:
 
 | Category | Tasks | Tool surface exercised |
 |---|---|---|
