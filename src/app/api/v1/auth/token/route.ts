@@ -5,6 +5,7 @@ import { User, OrgMembership, ApiKey, AccessToken, Organization } from '@/models
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import type { Role } from '@/lib/permissions';
+import { addCorsHeaders } from '@/lib/api-auth';
 
 type WhiteLabelDefaultRole = Extract<Role, 'editor' | 'viewer'>;
 
@@ -112,58 +113,65 @@ export async function POST(req: NextRequest) {
 
     // Validate input
     if (!apiKey) {
-      return NextResponse.json(
+      const res = NextResponse.json(
         {
           error:
             'Missing API key. Send it as "Authorization: Bearer img_…" or as an "apiKey" body field.',
         },
         { status: 400 },
       );
+      return addCorsHeaders(res, req.headers.get('origin'), []);
     }
 
     if (!email && !phone) {
-      return NextResponse.json(
+      const res = NextResponse.json(
         { error: 'At least one of email or phone is required' },
         { status: 400 },
       );
+      return addCorsHeaders(res, req.headers.get('origin'), []);
     }
 
     await connectToDatabase();
 
     // Find and validate API key
     if (!apiKey.startsWith('img_')) {
-      return NextResponse.json(
+      const res = NextResponse.json(
         { error: 'Invalid API key format' },
         { status: 401 },
       );
+      return addCorsHeaders(res, req.headers.get('origin'), []);
     }
 
     const keyPrefix = apiKey.substring(0, 12); // img_ + first 8 hex chars
     const apiKeyDoc = await ApiKey.findOne({ keyPrefix }).select('+keyHash');
 
     if (!apiKeyDoc) {
-      return NextResponse.json({ error: 'Invalid API key' }, { status: 401 });
+      const res = NextResponse.json({ error: 'Invalid API key' }, { status: 401 });
+      return addCorsHeaders(res, req.headers.get('origin'), []);
     }
 
     // Verify API key hash
     const isValidKey = await bcrypt.compare(apiKey, apiKeyDoc.keyHash);
     if (!isValidKey) {
-      return NextResponse.json({ error: 'Invalid API key' }, { status: 401 });
+      const res = NextResponse.json({ error: 'Invalid API key' }, { status: 401 });
+      return addCorsHeaders(res, req.headers.get('origin'), []);
     }
 
     // Check if API key is revoked or expired
     if (apiKeyDoc.isRevoked) {
-      return NextResponse.json(
+      const res = NextResponse.json(
         { error: 'API key has been revoked' },
         { status: 401 },
       );
+      return addCorsHeaders(res, req.headers.get('origin'), []);
     }
 
     if (apiKeyDoc.expiresAt && apiKeyDoc.expiresAt < new Date()) {
-      return NextResponse.json(
+      const res = NextResponse.json(
         { error: 'API key has expired' },
         { status: 401 },
       );
+      return addCorsHeaders(res, req.headers.get('origin'), []);
     }
 
     const normalizedEmail = normalizeEmail(email);
@@ -174,10 +182,11 @@ export async function POST(req: NextRequest) {
       .lean();
 
     if (!org) {
-      return NextResponse.json(
+      const res = NextResponse.json(
         { error: 'Organization not found' },
         { status: 404 },
       );
+      return addCorsHeaders(res, req.headers.get('origin'), []);
     }
 
     const defaultNewUserRole = normalizeWhiteLabelDefaultRole(
@@ -225,23 +234,25 @@ export async function POST(req: NextRequest) {
       && allowedEmailDomains.length > 0
       && !emailMatchesAllowedDomains(normalizedEmail, allowedEmailDomains)
     ) {
-      return NextResponse.json(
+      const res = NextResponse.json(
         {
           error: `Email domain is not allowed for automatic white-label provisioning. Allowed domains: ${allowedEmailDomains.map((domain) => `@${domain}`).join(', ')}`,
         },
         { status: 403 },
       );
+      return addCorsHeaders(res, req.headers.get('origin'), []);
     }
 
     if (!user) {
       if (!normalizedEmail) {
-        return NextResponse.json(
+        const res = NextResponse.json(
           {
             error:
               'Email is required to automatically provision a brand-new white-label user',
           },
           { status: 400 },
         );
+        return addCorsHeaders(res, req.headers.get('origin'), []);
       }
 
       user = await User.create({
@@ -289,10 +300,11 @@ export async function POST(req: NextRequest) {
     // Parse expiry duration
     const expiryMs = parseExpiryDuration(expiresIn);
     if (!expiryMs) {
-      return NextResponse.json(
+      const res = NextResponse.json(
         { error: 'Invalid expiresIn format. Use: 1h, 24h, 7d, 30d' },
         { status: 400 },
       );
+      return addCorsHeaders(res, req.headers.get('origin'), []);
     }
 
     const expiresAt = new Date(Date.now() + expiryMs);
@@ -327,7 +339,7 @@ export async function POST(req: NextRequest) {
     // Update API key last used timestamp
     await ApiKey.findByIdAndUpdate(apiKeyDoc._id, { lastUsedAt: new Date() });
 
-    return NextResponse.json({
+    const res = NextResponse.json({
       success: true,
       accessToken: token,
       user: {
@@ -342,13 +354,15 @@ export async function POST(req: NextRequest) {
       },
       expiresAt,
     });
+    return addCorsHeaders(res, req.headers.get('origin'), []);
   } catch (err: unknown) {
     const e = err as { message?: string };
     console.error('Access token generation error:', e);
-    return NextResponse.json(
+    const res = NextResponse.json(
       { error: e.message ?? 'Failed to generate access token' },
       { status: 500 },
     );
+    return addCorsHeaders(res, req.headers.get('origin'), []);
   }
 }
 
@@ -363,10 +377,11 @@ export async function DELETE(req: NextRequest) {
   try {
     const authHeader = req.headers.get('authorization');
     if (!authHeader?.startsWith('Bearer ')) {
-      return NextResponse.json(
+      const res = NextResponse.json(
         { error: 'Missing or invalid authorization header' },
         { status: 401 },
       );
+      return addCorsHeaders(res, req.headers.get('origin'), []);
     }
 
     const token = authHeader.substring(7);
@@ -376,26 +391,29 @@ export async function DELETE(req: NextRequest) {
     const accessToken = await AccessToken.findOne({ token });
 
     if (!accessToken) {
-      return NextResponse.json(
+      const res = NextResponse.json(
         { error: 'Invalid access token' },
         { status: 401 },
       );
+      return addCorsHeaders(res, req.headers.get('origin'), []);
     }
 
     // Revoke the token
     await AccessToken.findByIdAndUpdate(accessToken._id, { isActive: false });
 
-    return NextResponse.json({
+    const res = NextResponse.json({
       success: true,
       message: 'Access token revoked successfully',
     });
+    return addCorsHeaders(res, req.headers.get('origin'), []);
   } catch (err: unknown) {
     const e = err as { message?: string };
     console.error('Access token revocation error:', e);
-    return NextResponse.json(
+    const res = NextResponse.json(
       { error: e.message ?? 'Failed to revoke access token' },
       { status: 500 },
     );
+    return addCorsHeaders(res, req.headers.get('origin'), []);
   }
 }
 
@@ -422,4 +440,9 @@ function parseExpiryDuration(expiresIn: string): number | null {
     default:
       return null;
   }
+}
+
+export async function OPTIONS(req: NextRequest) {
+  const res = new NextResponse(null, { status: 204 });
+  return addCorsHeaders(res, req.headers.get('origin'), []);
 }

@@ -4,6 +4,12 @@ import { connectToDatabase } from '@/lib/db';
 import { AccessToken, ApiKey, OrgMembership, MemberGroup, Organization, User } from '@/models';
 import { getSignedDownloadUrl } from '@/lib/storage';
 import type { Role } from '@/lib/permissions';
+import { addCorsHeaders } from '@/lib/api-auth';
+
+export async function OPTIONS(req: NextRequest) {
+  const res = new NextResponse(null, { status: 204 });
+  return addCorsHeaders(res, req.headers.get('origin'), []);
+}
 
 /**
  * GET /api/v1/auth/me
@@ -16,34 +22,37 @@ import type { Role } from '@/lib/permissions';
  */
 export async function GET(req: NextRequest) {
  try {
- const authHeader = req.headers.get('authorization');
- if (!authHeader?.startsWith('Bearer imgt_')) {
- return NextResponse.json(
- { error: 'Access token required (imgt_...)' },
- { status: 401 },
- );
- }
+  const authHeader = req.headers.get('authorization');
+  if (!authHeader?.startsWith('Bearer imgt_')) {
+  const res = NextResponse.json(
+  { error: 'Access token required (imgt_...)' },
+  { status: 401 },
+  );
+  return addCorsHeaders(res, req.headers.get('origin'), []);
+  }
 
- const token = authHeader.slice(7).trim();
+  const token = authHeader.slice(7).trim();
 
- await connectToDatabase();
+  await connectToDatabase();
 
- // Find the access token
- const accessToken = await AccessToken.findOne({ token, isActive: true });
- if (!accessToken) {
- return NextResponse.json(
- { error: 'Invalid or expired access token' },
- { status: 401 },
- );
- }
+  // Find the access token
+  const accessToken = await AccessToken.findOne({ token, isActive: true });
+  if (!accessToken) {
+  const res = NextResponse.json(
+  { error: 'Invalid or expired access token' },
+  { status: 401 },
+  );
+  return addCorsHeaders(res, req.headers.get('origin'), []);
+  }
 
- // Check expiry
- if (accessToken.expiresAt && accessToken.expiresAt < new Date()) {
- return NextResponse.json(
- { error: 'Access token has expired' },
- { status: 401 },
- );
- }
+  // Check expiry
+  if (accessToken.expiresAt && accessToken.expiresAt < new Date()) {
+  const res = NextResponse.json(
+  { error: 'Access token has expired' },
+  { status: 401 },
+  );
+  return addCorsHeaders(res, req.headers.get('origin'), []);
+  }
 
  // Update last used
  await AccessToken.findByIdAndUpdate(accessToken._id, { lastUsedAt: new Date() });
@@ -53,12 +62,13 @@ export async function GET(req: NextRequest) {
  .select('name slug logoUrl storageConfig sectionAccess themeColor embedConfig aiFeatureConfig')
  .lean();
 
- if (!org) {
- return NextResponse.json(
- { error: 'Organization not found' },
- { status: 404 },
- );
- }
+  if (!org) {
+  const res = NextResponse.json(
+  { error: 'Organization not found' },
+  { status: 404 },
+  );
+  return addCorsHeaders(res, req.headers.get('origin'), []);
+  }
 
  // Get membership for section access and detailed role info
  const membership = await OrgMembership.findOne({
@@ -159,25 +169,33 @@ export async function GET(req: NextRequest) {
  ? Object.fromEntries(rawAiConfig)
  : (rawAiConfig as Record<string, unknown>) ?? {};
 
- return NextResponse.json({
- userId: accessToken.userId?.toString() ?? null,
- email: accessToken.email ?? null,
- name: userName ?? (membership as unknown as { inviteName?: string })?.inviteName ?? null,
- image: userImage,
- orgId: accessToken.orgId.toString(),
- orgSlug: orgDetails?.slug ?? '',
- orgName: orgDetails?.name ?? '',
- logoUrl: resolvedLogoUrl,
- themeColor: orgDetails?.themeColor ?? 'violet',
- embedConfig: orgDetails?.embedConfig ?? { showLogo: true, showName: true },
- role,
- sectionAccess,
- accessRules,
- folderScope,
- aiFeatureConfig,
- });
- } catch (err) {
- console.error('[/api/v1/auth/me] Error:', err);
- return NextResponse.json({ error: 'Server error' }, { status: 500 });
- }
+  return addCorsHeaders(
+    NextResponse.json({
+      userId: accessToken.userId?.toString() ?? null,
+      email: accessToken.email ?? null,
+      name: userName ?? (membership as unknown as { inviteName?: string })?.inviteName ?? null,
+      image: userImage,
+      orgId: accessToken.orgId.toString(),
+      orgSlug: orgDetails?.slug ?? '',
+      orgName: orgDetails?.name ?? '',
+      logoUrl: resolvedLogoUrl,
+      themeColor: orgDetails?.themeColor ?? 'violet',
+      embedConfig: orgDetails?.embedConfig ?? { showLogo: true, showName: true },
+      role,
+      sectionAccess,
+      accessRules,
+      folderScope,
+      aiFeatureConfig,
+    }),
+    req.headers.get('origin'),
+    [],
+  );
+  } catch (err) {
+  console.error('[/api/v1/auth/me] Error:', err);
+  return addCorsHeaders(
+    NextResponse.json({ error: 'Server error' }, { status: 500 }),
+    req.headers.get('origin'),
+    [],
+  );
+  }
 }
