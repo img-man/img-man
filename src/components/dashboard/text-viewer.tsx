@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 'use client';
 
+import { copyText } from '@/lib/clipboard';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Loader2,
@@ -233,7 +234,7 @@ export function TextViewer({ src, name }: TextViewerProps) {
   const handleCopy = useCallback(async () => {
     if (!content) return;
     try {
-      await navigator.clipboard.writeText(content);
+      await copyText(content);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {

@@ -7,6 +7,7 @@
  * Supports multi-language detection and structured export.
  */
 
+import { copyText } from '@/lib/clipboard';
 import { useState, useCallback, useRef, useEffect } from 'react';
 import {
   X,
@@ -156,7 +157,7 @@ export default function PdfOcrModal({ onClose }: { onClose: () => void }) {
 
   const handleCopy = useCallback(() => {
     if (!state.result) return;
-    navigator.clipboard.writeText(state.result.text);
+    copyText(state.result.text);
     setState((s) => ({ ...s, copied: true }));
     setTimeout(() => setState((s) => ({ ...s, copied: false })), 2000);
   }, [state.result]);

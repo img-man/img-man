@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 'use client';
 
+import { copyText } from '@/lib/clipboard';
 import { useState, useEffect, useCallback } from 'react';
 import {
  Plus,
@@ -186,7 +187,7 @@ export default function NamedTransformsPage() {
  /* ── Copy URL ──────────────────────────────────────────────── */
  const handleCopy = async (name: string) => {
  const url = `${window.location.origin}/api/transform/${orgSlug}/n-${name}/{storageKey}`;
- await navigator.clipboard.writeText(url);
+ await copyText(url);
  setCopiedId(name);
  setTimeout(() => setCopiedId(null), 2000);
  };
@@ -243,7 +244,7 @@ export default function NamedTransformsPage() {
  };
 
  const handleCopyPreset = async (transform: string, name: string) => {
- await navigator.clipboard.writeText(transform);
+ await copyText(transform);
  setCopiedPreset(name);
  setTimeout(() => setCopiedPreset(null), 2000);
  };

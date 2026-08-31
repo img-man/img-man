@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 'use client';
 
+import { copyText } from '@/lib/clipboard';
 import { useState, useEffect, useCallback } from 'react';
 import {
  Key,
@@ -142,7 +143,7 @@ export default function ApiKeysPage() {
  // ─── Copy key ──────────────────────────────────────────────
  const handleCopy = async () => {
  if (!revealedKey) return;
- await navigator.clipboard.writeText(revealedKey);
+ await copyText(revealedKey);
  setCopied(true);
  setTimeout(() => setCopied(false), 2000);
  };

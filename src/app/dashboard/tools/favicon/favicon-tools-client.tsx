@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 'use client';
 
+import { copyText as copyToClipboard } from '@/lib/clipboard';
 import type { ChangeEvent, ReactNode } from 'react';
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -407,7 +408,7 @@ export default function FaviconToolsClient() {
   const focusedTool = focusedToolKey ? TOOL_FOCUS_CONFIG[focusedToolKey] ?? null : null;
 
   const copyText = async (text: string, key: string) => {
-    await navigator.clipboard.writeText(text);
+    await copyToClipboard(text);
     setCopiedId(key);
     window.setTimeout(() => {
       setCopiedId((current) => (current === key ? null : current));

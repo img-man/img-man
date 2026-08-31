@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 'use client';
 
+import { copyText } from '@/lib/clipboard';
 import { useState, useCallback, useRef, useEffect } from 'react';
 import {
   X,
@@ -1449,7 +1450,7 @@ export function AssetDrawer({
             </span>
             <button
               onClick={() => {
-                navigator.clipboard.writeText(asset._id);
+                copyText(asset._id);
                 setCopiedField('id');
                 setTimeout(() => setCopiedField(null), 2000);
               }}
@@ -1477,7 +1478,7 @@ export function AssetDrawer({
               <button
                 onClick={() => {
                   const shareUrl = toAbsoluteAssetUrl(asset.url!);
-                  navigator.clipboard.writeText(shareUrl);
+                  copyText(shareUrl);
                   setCopiedField('directUrl');
                   setTimeout(() => setCopiedField(null), 2000);
                 }}
@@ -1506,7 +1507,7 @@ export function AssetDrawer({
               <button
                 onClick={() => {
                   const shareUrl = toAbsoluteAssetUrl(asset.publicUrl!);
-                  navigator.clipboard.writeText(shareUrl);
+                  copyText(shareUrl);
                   setCopiedField('imgmanUrl');
                   setTimeout(() => setCopiedField(null), 2000);
                 }}
@@ -2450,7 +2451,7 @@ export function AssetDrawer({
               <button
                 onClick={() => {
                   const shareUrl = toAbsoluteAssetUrl(asset.publicUrl || asset.url!);
-                  navigator.clipboard.writeText(shareUrl);
+                  copyText(shareUrl);
                   setCopiedField('imgmanUrl');
                   setTimeout(() => setCopiedField(null), 2000);
                 }}

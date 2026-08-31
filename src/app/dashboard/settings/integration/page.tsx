@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 'use client';
 
+import { copyText } from '@/lib/clipboard';
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import {
@@ -187,7 +188,7 @@ export default function IntegrationPage() {
   }, [fetchOrgInfo]);
 
   const copyToClipboard = useCallback(async (text: string, id: string) => {
-    await navigator.clipboard.writeText(text);
+    await copyText(text);
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
   }, []);

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 'use client';
 
+import { copyText } from '@/lib/clipboard';
 import { useState, useCallback, useMemo } from 'react';
 import {
  Sliders,
@@ -124,7 +125,7 @@ export function TransformPreview({
  /* ── Handlers ──────────────────────────────────────────────── */
  const handleCopyUrl = useCallback(async () => {
  if (!transformUrl) return;
- await navigator.clipboard.writeText(displayedTransformUrl);
+ await copyText(displayedTransformUrl);
  setCopied(true);
  setTimeout(() => setCopied(false), 2000);
  }, [displayedTransformUrl, transformUrl]);

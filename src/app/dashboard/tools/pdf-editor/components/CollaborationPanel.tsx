@@ -12,6 +12,7 @@
 
 'use client';
 
+import { copyText } from '@/lib/clipboard';
 import { useState } from 'react';
 import {
   Users,
@@ -194,15 +195,11 @@ export default function CollaborationPanel({
 
   function copyInviteLink() {
     if (session?.inviteLink) {
-      navigator.clipboard.writeText(session.inviteLink).then(
-        () => {
-          setCopied(true);
-          setTimeout(() => setCopied(false), 2000);
-        },
-        () => {
-          // Clipboard write failed (permissions/insecure context) — ignore silently
-        },
-      );
+      copyText(session.inviteLink).then((ok) => {
+        if (!ok) return; // Clipboard write failed (permissions/insecure context)
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      });
     }
   }
 

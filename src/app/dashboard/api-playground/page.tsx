@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 'use client';
 
+import { copyText } from '@/lib/clipboard';
 import { useState, useCallback, useMemo, useRef } from 'react';
 import {
   Play,
@@ -195,7 +196,7 @@ export default function ApiPlaygroundPage() {
   // ── Copy response ───────────────────────────────────────
   const copyResponse = useCallback(() => {
     if (!response) return;
-    navigator.clipboard.writeText(response.body);
+    copyText(response.body);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }, [response]);

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 'use client';
 
+import { copyText } from '@/lib/clipboard';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   AlertCircle,
@@ -151,7 +152,7 @@ export function DocumentTextViewer({
     if (!content) return;
 
     try {
-      await navigator.clipboard.writeText(content);
+      await copyText(content);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 'use client';
 
+import { copyText } from '@/lib/clipboard';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
  Link2,
@@ -144,7 +145,7 @@ export function ShareDialog({
 
  const handleCopy = async () => {
  if (!shareUrl) return;
- await navigator.clipboard.writeText(shareUrl);
+ await copyText(shareUrl);
  setCopied(true);
  setTimeout(() => setCopied(false), 2000);
  };

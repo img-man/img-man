@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 'use client';
 
+import { copyText } from '@/lib/clipboard';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Link2,
@@ -169,7 +170,7 @@ export default function SharesPage() {
   /* ── Actions ─────────────────────────────────────────── */
   const handleCopy = async (token: string) => {
     const url = `${window.location.origin}/s/${token}`;
-    await navigator.clipboard.writeText(url);
+    await copyText(url);
     setCopiedToken(token);
     setTimeout(() => setCopiedToken(null), 2000);
   };
