@@ -53,7 +53,15 @@ and logo are trademarked — see `TRADEMARK.md`.
 | Actions secret `DOCKERHUB_TOKEN` | Docker Hub **access token** (not password) | Settings → Secrets and variables → Actions |
 | Actions variable `DOCKERHUB_USERNAME` | Docker Hub user/org namespace | same |
 | GHCR package visibility | Public after first release | Packages → img-man |
-| `@img-man/maintainers` team | Exists, referenced by CODEOWNERS | Org → Teams |
+| `@img-man/maintainers` team | Create before merge-gating; CODEOWNERS references it | Org → Teams |
+
+**Manual dependency:** existence of `@img-man/maintainers` could not be
+verified from outside the org. Until an admin confirms the team exists and
+has members, do **not** enable "Require review from Code Owners" in branch
+protection — GitHub would treat the CODEOWNERS entries as no-owner paths
+and PRs could stall waiting for an approval nobody can give. Plain
+required-approver counts work without the team. See
+[REPOSITORY-MAINTENANCE.md](REPOSITORY-MAINTENANCE.md).
 
 ## What must NOT be configured
 

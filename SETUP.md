@@ -152,6 +152,11 @@ undecryptable. See [credential rotation](customer-docs/credential-rotation.md).
 
 Open **http://localhost:4000** and sign in.
 
+**Non-localhost deployments:** set `IMGMAN_BOOTSTRAP_EMAIL` and
+`IMGMAN_BOOTSTRAP_PASSWORD` before the first start — the defaults below
+are published in this repository and are for localhost evaluation only.
+They are never production credentials.
+
 If you did not set `IMGMAN_BOOTSTRAP_*`, the default administrator is:
 
 ```text

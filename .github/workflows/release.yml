@@ -212,7 +212,14 @@ jobs:
           cache-from: type=gha,scope=${{ env.BUILDCACHE_SCOPE }}
           cache-to: type=gha,mode=max,scope=${{ env.BUILDCACHE_SCOPE }}
 
-      - name: Smoke test containers (both architectures)
+      # LIVENESS-ONLY smoke test: boots each architecture's image and waits
+      # for /api/health/live without any database. This proves the image
+      # starts and serves on both platforms (arm64 under QEMU emulation)
+      # with zero external credentials. The full Compose integration test
+      # (MongoDB + /api/health/ready) runs on every PR via ci.yml's
+      # docker-compose-smoke job; the tag commit is required to be on main,
+      # so a release always inherits a PR-validated Compose stack.
+      - name: Liveness-only smoke test (both architectures)
         run: |
           set -u
           run_smoke() {

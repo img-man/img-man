@@ -54,7 +54,9 @@ npm run dev                            # http://localhost:4000
 
 ### Docker Compose
 
-App + MongoDB, no manual config — good for trying it out locally:
+App + MongoDB, minimal configuration — good for trying it out locally
+(the compose file ships local-dev defaults; replace the secrets before
+exposing the instance anywhere):
 
 ```bash
 git clone https://github.com/img-man/img-man.git && cd img-man
@@ -92,8 +94,10 @@ Full walkthrough: **[SETUP.md](SETUP.md)**.
   license keys. The [name and logo](TRADEMARK.md) are trademarked
   separately.
 - **Self-hosted** — you run it; your database, your bucket, your AI keys.
-- **Your data stays yours** — assets go to storage you configure, AI calls
-  go to providers you enable with keys you supply.
+- **You control your data** — assets go to the storage provider the
+  self-hosting operator configures (GCS/S3/BYOC), and AI features send
+  requests only to the provider and credentials the operator explicitly
+  enables. Nothing is routed through img-man's authors.
 - **No phone-home** — the application makes no telemetry or
   license-check callbacks, and no license enforcement will be added.
 - **Free CI/CD on public infrastructure** — GitHub Actions, GHCR, Docker
@@ -253,8 +257,11 @@ Issues and pull requests are welcome — start with
 [SECURITY.md](SECURITY.md), not the public tracker.
 
 Commercial hosting and white-label support are built on top of this repository
-and live outside it. Nothing in img-man phones home, checks a licence, or
-degrades without a subscription.
+and live outside it. Nothing in the img-man application phones home, checks
+a licence, or degrades without a subscription (Next.js build telemetry is
+disabled in the image; the only usage analytics are opt-in and stored in
+your own database). Bundled third-party components, such as the optional
+Polotno design engine, are governed by their own licences.
 
 ---
 

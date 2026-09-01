@@ -89,12 +89,15 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # Reported, not yet blocking. The remaining high/critical advisories are
-      # transitive with no non-breaking fix (@auth/core via next-auth v4,
-      # libvips via sharp, uuid via @google-cloud/storage). Same policy as the
-      # advisory job in ci.yml; flip to blocking once the backlog is clear.
-      # NEW criticals introduced by a PR are blocked by dependency-review.
-      - name: npm audit (high+)
+      # Reported, not yet blocking (continue-on-error below). The remaining
+      # high/critical advisories are transitive with no non-breaking fix
+      # (@auth/core via next-auth v4, libvips via sharp, uuid via
+      # @google-cloud/storage). Same policy as the advisory job in ci.yml;
+      # flip to blocking (remove continue-on-error) once the backlog is
+      # clear. NEW criticals introduced by a PR are blocked by
+      # dependency-review.
+      - name: npm audit (high+, advisory)
+        continue-on-error: true
         run: npm audit --audit-level=high
 
       - name: Generate SBOM artifact
