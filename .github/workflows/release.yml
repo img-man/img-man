@@ -1,0 +1,329 @@
+name: Release
+
+# Runs from version tags only (vMAJOR.MINOR.PATCH), and only for tag commits
+# that are reachable from `main` — a release must describe reviewed, merged
+# code, never an arbitrary commit. `latest` is published only from a
+# successful, fully-validated stable release; never from main commits.
+# See docs/releases.md.
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write # create GitHub Release
+  packages: write # push to GHCR
+  id-token: write # build provenance / SBOM attestations
+
+env:
+  GHCR_IMAGE: ghcr.io/img-man/img-man
+  # Shared BuildKit cache scope: the validation builds write to it and the
+  # final multi-arch publish reads from it, so only layer exports differ.
+  BUILDCACHE_SCOPE: release
+
+jobs:
+  quality:
+    name: Validate source
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      # A release tag must point at a commit that is part of protected
+      # main. This blocks "tag a random WIP commit and publish it" and
+      # keeps the rule: merge to main → bump version → tag that commit.
+      - name: Verify tag commit is reachable from main
+        run: |
+          git fetch --no-tags origin +refs/heads/main:refs/remotes/origin/main
+          COMMIT="$(git rev-parse HEAD)"
+          if ! git merge-base --is-ancestor "$COMMIT" refs/remotes/origin/main; then
+            echo "::error::tag $GITHUB_REF_NAME points at $COMMIT, which is not an ancestor of origin/main — release tags must be created on merged main commits"
+            exit 1
+          fi
+          echo "tag commit $COMMIT is on main"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # The tag must correspond to the version declared in package.json,
+      # so the image and the GitHub Release always describe the same source.
+      - name: Verify tag matches package version
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          PKG="$(node -p "require('./package.json').version")"
+          if [ "$TAG" != "$PKG" ]; then
+            echo "::error::tag v$TAG does not match package.json version $PKG"
+            exit 1
+          fi
+
+      - name: Verify public purity
+        run: npm run verify:public-purity
+
+      - name: Verify SPDX headers
+        run: npm run verify:spdx
+
+      # Lint is advisory because the repository carries 86 pre-existing
+      # React Compiler diagnostics (setState-in-effect, refs-during-render)
+      # from before the compiler was enabled — see the advisory-job comment
+      # in ci.yml. They are not release-blocking bugs, but NEW lint errors
+      # introduced since the baseline ARE blocking: this step compares the
+      # total error count against the baseline and fails above it.
+      # When the backlog is cleared: drop the comparison and run plain
+      # `npm run lint`, then make it required in ci.yml too.
+      - name: Lint (baseline-gated)
+        run: |
+          set +e
+          npm run lint > lint.log 2>&1
+          LINT_EXIT=$?
+          set -e
+          cat lint.log
+          ERRORS=$(grep -oE '\(([0-9]+) error' lint.log | tail -1 | grep -oE '[0-9]+')
+          ERRORS=${ERRORS:-0}
+          BASELINE=86
+          if [ "$ERRORS" -gt "$BASELINE" ]; then
+            echo "::error::lint has $ERRORS errors; baseline is $BASELINE — fix the $((ERRORS-BASELINE)) new ones before releasing"
+            exit 1
+          fi
+          if [ "$LINT_EXIT" -ne 0 ] && [ "$ERRORS" -eq 0 ]; then
+            echo "::error::eslint exited $LINT_EXIT without a parsable summary — investigate before releasing"
+            exit 1
+          fi
+          echo "lint OK: $ERRORS errors at or below baseline $BASELINE"
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Unit tests with coverage
+        run: npm run test:coverage
+
+      - name: Production build
+        run: npm run build
+
+      - name: Generate SBOM
+        run: npm run sbom
+
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v7
+        with:
+          name: sbom
+          path: sbom.cdx.json
+
+  security:
+    name: Security validation
+    needs: quality
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Install Gitleaks
+        run: |
+          GITLEAKS_VERSION=8.30.1
+          GITLEAKS_SHA256=551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
+          curl -fsSLo /tmp/gitleaks.tar.gz \
+            "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          echo "${GITLEAKS_SHA256}  /tmp/gitleaks.tar.gz" | sha256sum -c -
+          tar -xzf /tmp/gitleaks.tar.gz -C /tmp
+          sudo mv /tmp/gitleaks /usr/local/bin/gitleaks
+          gitleaks version
+
+      # Release tags must be secret-clean across full history — a secret in
+      # an older merged commit still ends up inside the published source.
+      - name: Gitleaks full-history scan
+        run: gitleaks git --config .gitleaks.toml --redact
+
+      # Advisory, same documented policy as CI: the remaining high/critical
+      # npm advisories are unfixable transitives; see ci.yml. The new-critical
+      # case is blocked per-PR by dependency-review in security.yml, and the
+      # published image is hard-gated by Trivy in the image job. This step
+      # records the dependency state of the exact released source.
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: npm audit (advisory)
+        run: npm audit --audit-level=high
+        continue-on-error: true
+
+  image:
+    name: Build, validate, scan, publish container
+    needs: security
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Compute image tags
+        id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: |
+            ${{ env.GHCR_IMAGE }}
+            ${{ vars.DOCKERHUB_USERNAME != '' && format('{0}/img-man', vars.DOCKERHUB_USERNAME) || '' }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=raw,value=latest,enable={{is_default_version}}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      # Both architectures are built, smoke-tested and scanned BEFORE any
+      # push. arm64 runs under QEMU emulation on the amd64 runner — that is
+      # an emulated runtime test, not physical-hardware testing; see
+      # docs/support-matrix.md.
+      - name: Build amd64 image (validate only)
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          platforms: linux/amd64
+          push: false
+          load: true
+          tags: img-man:validated-amd64
+          cache-from: type=gha,scope=${{ env.BUILDCACHE_SCOPE }}
+          cache-to: type=gha,mode=max,scope=${{ env.BUILDCACHE_SCOPE }}
+
+      - name: Build arm64 image (validate only)
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          platforms: linux/arm64
+          push: false
+          load: true
+          tags: img-man:validated-arm64
+          cache-from: type=gha,scope=${{ env.BUILDCACHE_SCOPE }}
+          cache-to: type=gha,mode=max,scope=${{ env.BUILDCACHE_SCOPE }}
+
+      # LIVENESS-ONLY smoke test: boots each architecture's image and waits
+      # for /api/health/live without any database. This proves the image
+      # starts and serves on both platforms (arm64 under QEMU emulation)
+      # with zero external credentials. The full Compose integration test
+      # (MongoDB + /api/health/ready) runs on every PR via ci.yml's
+      # docker-compose-smoke job; the tag commit is required to be on main,
+      # so a release always inherits a PR-validated Compose stack.
+      - name: Liveness-only smoke test (both architectures)
+        run: |
+          set -u
+          run_smoke() {
+            local tag="$1" platform="$2" attempts="$3"
+            docker rm -f imageman-release >/dev/null 2>&1 || true
+            docker run -d --name imageman-release --platform "$platform" \
+              -e MONGODB_URI="mongodb://127.0.0.1:27017/img-man" \
+              -e NEXTAUTH_SECRET="release-smoke-secret" \
+              -p 3000:3000 "$tag" >/dev/null
+            for i in $(seq 1 "$attempts"); do
+              if curl -fsS http://127.0.0.1:3000/api/health/live >/dev/null 2>&1; then
+                echo "$platform liveness OK"
+                docker rm -f imageman-release >/dev/null
+                return 0
+              fi
+              sleep 3
+            done
+            echo "::error::$platform container did not become live"
+            docker logs imageman-release 2>&1 || true
+            docker rm -f imageman-release >/dev/null
+            return 1
+          }
+          # amd64 runs natively; arm64 boots slower under QEMU emulation.
+          run_smoke img-man:validated-amd64 linux/amd64 40
+          run_smoke img-man:validated-arm64 linux/arm64 160
+
+      # Publication policy: fail only on CRITICAL vulnerabilities that have a
+      # fix available (--ignore-unfixed). Unfixable transitive advisories are
+      # triaged like the npm-audit backlog instead of hard-blocking every
+      # release. Both architectures are scanned. See docs/releases.md.
+      - name: Scan amd64 image
+        uses: aquasecurity/trivy-action@0.36.0
+        with:
+          version: v0.74.0
+          image-ref: img-man:validated-amd64
+          format: table
+          exit-code: '1'
+          severity: CRITICAL
+          ignore-unfixed: true
+
+      - name: Scan arm64 image
+        uses: aquasecurity/trivy-action@0.36.0
+        with:
+          version: v0.74.0
+          image-ref: img-man:validated-arm64
+          format: table
+          exit-code: '1'
+          severity: CRITICAL
+          ignore-unfixed: true
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Log in to Docker Hub
+        if: vars.DOCKERHUB_USERNAME != '' && secrets.DOCKERHUB_TOKEN != ''
+        uses: docker/login-action@v4
+        with:
+          registry: docker.io
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # Final multi-arch publish. Layers are cache hits from the validation
+      # builds above (same `scope=release` GHA cache), so this run mainly
+      # exports manifests + attestations.
+      - name: Build and push multi-arch image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          provenance: mode=max
+          sbom: true
+          cache-from: type=gha,scope=${{ env.BUILDCACHE_SCOPE }}
+          cache-to: type=gha,mode=max,scope=${{ env.BUILDCACHE_SCOPE }}
+
+  release:
+    name: Create GitHub Release
+    needs: image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Download SBOM
+        uses: actions/download-artifact@v8
+        with:
+          name: sbom
+          path: release-assets
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            --draft=false \
+            --latest \
+            --generate-notes \
+            --title "img-man $GITHUB_REF_NAME" \
+            release-assets/sbom.cdx.json

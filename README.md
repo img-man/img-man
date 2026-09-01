@@ -16,9 +16,15 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/img-man/img-man/actions/workflows/ci.yml"><img src="https://github.com/img-man/img-man/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI"></a>
+  <a href="https://github.com/img-man/img-man/releases"><img src="https://img.shields.io/github/v/release/img-man/img-man" alt="Latest release"></a>
   <img src="https://img.shields.io/badge/license-Apache--2.0-blue" alt="Apache 2.0">
   <img src="https://img.shields.io/badge/node-%3E%3D22-brightgreen" alt="Node 22+">
   <img src="https://img.shields.io/badge/self--hosted-yes-informational" alt="Self-hosted">
+</p>
+
+<p align="center">
+  <img src="public/screenshots/dashboard.svg" alt="img-man dashboard preview" width="800">
 </p>
 
 ---
@@ -35,13 +41,67 @@ provider key. There is no hosted tier to graduate into, no storage cap, and no
 usage meter — the dashboard shows what you have used, never what you are allowed
 to use.
 
+## Quick Start
+
+### From source
+
 ```bash
 git clone https://github.com/img-man/img-man.git && cd img-man
-npm install && cp .env.example .env   # add Mongo URI + GCS bucket
-npm run dev                           # http://localhost:4000
+npm install                            # requires Node.js 22+
+cp .env.example .env                   # add a MongoDB URI + storage bucket
+npm run dev                            # http://localhost:4000
+```
+
+### Docker Compose
+
+App + MongoDB, minimal configuration — good for trying it out locally
+(the compose file ships local-dev defaults; replace the secrets before
+exposing the instance anywhere):
+
+```bash
+git clone https://github.com/img-man/img-man.git && cd img-man
+docker compose up -d --build           # http://localhost:3000
+```
+
+On first boot the app seeds a bootstrap admin and immediately locks it
+behind a **forced "Secure this deployment" credential change** — complete
+that screen before the dashboard opens. For anything beyond localhost
+evaluation, set `IMGMAN_BOOTSTRAP_EMAIL` and `IMGMAN_BOOTSTRAP_PASSWORD`
+in your environment first so the published defaults are never used
+([SETUP.md § 4](SETUP.md#4-first-login)).
+
+### Docker image
+
+Official images exist **from the first release tag (`v0.1.0`) onward** —
+before that, use the Compose build above. When available they are
+published to GHCR (and to Docker Hub if the maintainers configure a
+namespace there) with tags `X.Y.Z`, `X.Y`, `X`, and `latest` for stable
+releases:
+
+```bash
+export IMAGEMAN_IMAGE=ghcr.io/img-man/img-man:latest
+docker compose pull app
+docker compose up -d
 ```
 
 Full walkthrough: **[SETUP.md](SETUP.md)**.
+
+---
+
+## Trust
+
+- **Open source, Apache-2.0** — the full application, no crippleware, no
+  license keys. The [name and logo](TRADEMARK.md) are trademarked
+  separately.
+- **Self-hosted** — you run it; your database, your bucket, your AI keys.
+- **You control your data** — assets go to the storage provider the
+  self-hosting operator configures (GCS/S3/BYOC), and AI features send
+  requests only to the provider and credentials the operator explicitly
+  enables. Nothing is routed through img-man's authors.
+- **No phone-home** — the application makes no telemetry or
+  license-check callbacks, and no license enforcement will be added.
+- **Free CI/CD on public infrastructure** — GitHub Actions, GHCR, Docker
+  Hub; nothing in this project requires a paid service.
 
 ---
 
@@ -71,7 +131,10 @@ const { accessToken } = await fetch(`${IMAGEMAN_BASE_URL}/api/v1/auth/token`, {
 
 ```jsx
 // Your frontend — the entire client-side integration
-<iframe src={`${embedUrl}/embed/dashboard?token=${accessToken}`} />
+<iframe
+  src={`${embedUrl}/embed/dashboard?token=${accessToken}`}
+  allow="clipboard-write"
+/>
 ```
 
 An email img-man has not seen before is provisioned on its first token with the
@@ -194,8 +257,11 @@ Issues and pull requests are welcome — start with
 [SECURITY.md](SECURITY.md), not the public tracker.
 
 Commercial hosting and white-label support are built on top of this repository
-and live outside it. Nothing in img-man phones home, checks a licence, or
-degrades without a subscription.
+and live outside it. Nothing in the img-man application phones home, checks
+a licence, or degrades without a subscription (Next.js build telemetry is
+disabled in the image; the only usage analytics are opt-in and stored in
+your own database). Bundled third-party components, such as the optional
+Polotno design engine, are governed by their own licences.
 
 ---
 
@@ -204,6 +270,12 @@ degrades without a subscription.
 | | |
 | --- | --- |
 | [SETUP.md](SETUP.md) | Install, configure, first login, connect a client |
+| [docs/architecture.md](docs/architecture.md) | How the system is built |
+| [docs/configuration.md](docs/configuration.md) | Every environment variable |
+| [docs/support-matrix.md](docs/support-matrix.md) | Supported Node/DB/Docker/OS versions |
+| [docs/upgrading.md](docs/upgrading.md) | Upgrades, backups, rollback |
+| [docs/releases.md](docs/releases.md) | Release process and policies |
+| [CHANGELOG.md](CHANGELOG.md) | What changed in each version |
 | [customer-docs/INDEX.md](customer-docs/INDEX.md) | Full end-user documentation |
 | [customer-docs/api-reference.md](customer-docs/api-reference.md) | REST API |
 | [customer-docs/self-hosting.md](customer-docs/self-hosting.md) | Production deployment |

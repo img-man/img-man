@@ -126,3 +126,6 @@ roadmap-blockers.json
 # security scan reports contain partial secret values
 gitleaks-report*.json
 trufflehog-report*.json
+
+# internal agent working notes, not part of the public repository
+agentDocs/

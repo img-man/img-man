@@ -16,6 +16,11 @@ body:
     validations:
       required: true
   - type: textarea
+    id: usecase
+    attributes:
+      label: Use case
+      description: Who does this help and in what situation?
+  - type: textarea
     id: alternatives
     attributes:
       label: Alternatives considered

@@ -6,7 +6,7 @@ body:
     id: what
     attributes:
       label: What happened?
-      description: A clear description of the bug and expected behavior.
+      description: A clear description of the bug, and what you expected to happen instead.
     validations:
       required: true
   - type: textarea
@@ -22,11 +22,40 @@ body:
     id: version
     attributes:
       label: img-man version / commit
+      description: Release tag (e.g. v0.1.0), container image tag, or commit SHA.
+    validations:
+      required: true
+  - type: dropdown
+    id: install
+    attributes:
+      label: Installation method
+      options:
+        - Docker image
+        - Docker Compose
+        - From source (npm)
+        - Other / unknown
     validations:
       required: true
   - type: input
     id: env
     attributes:
-      label: Environment (Node, OS)
+      label: Environment
+      description: Node version (if from source), OS/architecture, browser if UI-related.
+      placeholder: e.g. Node 22.17 / Ubuntu 24.04 arm64 / Chrome 128
     validations:
       required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs
+      description: Server output, browser console, or container logs. Redact secrets and tokens first.
+      render: text
+  - type: checkboxes
+    id: reproducible
+    attributes:
+      label: Reproducibility
+      options:
+        - label: I was able to reproduce this at least twice
+          required: false
+        - label: This happens on a fresh installation too
+          required: false

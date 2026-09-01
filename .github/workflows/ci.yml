@@ -16,10 +16,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 22
           cache: npm
@@ -34,7 +34,7 @@ jobs:
         run: npm run verify:spdx
 
       - name: Type check
-        run: npm run type-check
+        run: npm run typecheck
 
       - name: Build
         run: npm run build
@@ -60,10 +60,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 22
           cache: npm
@@ -78,3 +78,39 @@ jobs:
       - name: npm audit (high+)
         continue-on-error: true
         run: npm audit --audit-level=high
+
+  # Blocking: real Docker Compose integration smoke test — the same stack a
+  # self-hosting user runs (`docker compose up -d`), including MongoDB.
+  # Multi-arch builds and pushes happen only in release.yml from version tags.
+  docker-compose-smoke:
+    name: Docker Compose integration smoke
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Build and start the stack
+        run: |
+          docker compose -p imageman-ci up -d --build --wait --wait-timeout 300
+
+      - name: Verify health endpoints
+        run: |
+          echo "GET /api/health/live:"
+          curl -fsS http://127.0.0.1:3000/api/health/live
+          echo
+          echo "GET /api/health/ready:"
+          curl -fsS http://127.0.0.1:3000/api/health/ready
+          echo
+          # The compose healthcheck gates on /api/health/ready, so --wait
+          # already proved readiness; assert the app is still running after
+          # the endpoint checks.
+          test -n "$(docker compose -p imageman-ci ps --status running -q app)"
+          echo "app container running"
+
+      - name: Collect logs on failure
+        if: failure()
+        run: docker compose -p imageman-ci logs --no-color
+
+      - name: Tear down the stack
+        if: always()
+        run: docker compose -p imageman-ci down -v --remove-orphans

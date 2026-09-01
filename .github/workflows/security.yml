@@ -1,0 +1,130 @@
+name: Security
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  schedule:
+    # Full-history secret scan every Monday 03:00 UTC
+    - cron: '0 3 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  gitleaks:
+    name: Secret scan (Gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+        with:
+          # Full history is required for the scheduled/deep scan
+          fetch-depth: 0
+
+      # Pinned version + digest so the scanner itself is deterministic.
+      # Bump intentionally (and keep release.yml in sync); Dependabot
+      # covers the actions, not this binary.
+      - name: Install Gitleaks
+        run: |
+          GITLEAKS_VERSION=8.30.1
+          GITLEAKS_SHA256=551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
+          curl -fsSLo /tmp/gitleaks.tar.gz \
+            "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          echo "${GITLEAKS_SHA256}  /tmp/gitleaks.tar.gz" | sha256sum -c -
+          tar -xzf /tmp/gitleaks.tar.gz -C /tmp
+          sudo mv /tmp/gitleaks /usr/local/bin/gitleaks
+          gitleaks version
+
+      # PRs: scan only the commits the PR introduces. NOTE: --log-opts feeds
+      # `git log`, so the range must be a log spec ("--no-merges -p base..head").
+      # A `rev-list ...` string here would scan ZERO commits silently.
+      - name: Scan pull request diff
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          gitleaks git \
+            --config .gitleaks.toml \
+            --redact \
+            --log-opts "--no-merges -p ${BASE_SHA}..${HEAD_SHA}"
+
+      # Pushes to main, weekly schedule: scan the full history. Findings are
+      # uploaded as an artifact for triage; --redact keeps secret values out
+      # of the log.
+      - name: Scan full history
+        if: github.event_name != 'pull_request'
+        run: |
+          gitleaks git \
+            --config .gitleaks.toml \
+            --redact \
+            --report-format sarif \
+            --report-path gitleaks-report.sarif
+
+      - name: Upload scan report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: gitleaks-report
+          path: gitleaks-report.sarif
+          if-no-files-found: ignore
+          retention-days: 14
+
+  dependency-vulnerabilities:
+    name: Dependency audit (npm)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Reported, not yet blocking (continue-on-error below). The remaining
+      # high/critical advisories are transitive with no non-breaking fix
+      # (@auth/core via next-auth v4, libvips via sharp, uuid via
+      # @google-cloud/storage). Same policy as the advisory job in ci.yml;
+      # flip to blocking (remove continue-on-error) once the backlog is
+      # clear. NEW criticals introduced by a PR are blocked by
+      # dependency-review.
+      - name: npm audit (high+, advisory)
+        continue-on-error: true
+        run: npm audit --audit-level=high
+
+      - name: Generate SBOM artifact
+        run: npm run sbom
+
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v7
+        with:
+          name: sbom
+          path: sbom.cdx.json
+          retention-days: 14
+
+  dependency-review:
+    name: Dependency review (PRs)
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      # Blocks a PR only when a newly added dependency brings a CRITICAL
+      # advisory. Existing transitive highs are handled by the audit job.
+      - name: Review new dependencies
+        uses: actions/dependency-review-action@v5
+        with:
+          fail-on-severity: critical
+          comment-summary-in-pr: always
