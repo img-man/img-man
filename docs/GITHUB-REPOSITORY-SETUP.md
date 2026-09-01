@@ -47,6 +47,7 @@ and logo are trademarked — see `TRADEMARK.md`.
 | Branch protection | Per [REPOSITORY-MAINTENANCE.md](REPOSITORY-MAINTENANCE.md) | Settings → Branches |
 | Private vulnerability reporting | Enabled | Settings → Security → Code security and analysis |
 | Secret scanning + push protection | Enabled (free for public repos) | Settings → Code security |
+| **Dependency graph** | **Enabled — required.** Until this is on, `Dependency Review (PRs)` fails with "Dependency review is not supported on this repository". Do not work around it by removing or softening the review step; enable the graph (Dependabot alerts may also need to be turned on). Give it a few minutes to build the snapshot for `main` after enabling. | Settings → Code security |
 | Actions → Workflow permissions | Read repository contents and packages | Settings → Actions → General |
 | Wiki / Issues | Issues on; Wiki off (docs live in `customer-docs/`) | Settings → General |
 | Docker Hub `img-man` repo | Created public, matching `DOCKERHUB_USERNAME` | hub.docker.com |

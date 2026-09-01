@@ -66,7 +66,7 @@ jobs:
 
       - name: Upload scan report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: gitleaks-report
           path: gitleaks-report.sarif
@@ -104,7 +104,7 @@ jobs:
         run: npm run sbom
 
       - name: Upload SBOM
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: sbom
           path: sbom.cdx.json
@@ -124,7 +124,7 @@ jobs:
       # Blocks a PR only when a newly added dependency brings a CRITICAL
       # advisory. Existing transitive highs are handled by the audit job.
       - name: Review new dependencies
-        uses: actions/dependency-review-action@v4
+        uses: actions/dependency-review-action@v5
         with:
           fail-on-severity: critical
           comment-summary-in-pr: always

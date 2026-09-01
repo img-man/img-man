@@ -23,6 +23,14 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
   buttons work inside iframes (embedded dashboard).
 
 ### Changed
+- GitHub Actions upgraded to Node-24-runtime majors: `actions/upload-artifact@v7`,
+  `actions/download-artifact@v8`, `actions/dependency-review-action@v5`,
+  `docker/build-push-action@v7`, `docker/login-action@v4`,
+  `docker/metadata-action@v6`, `docker/setup-buildx-action@v4`,
+  `docker/setup-qemu-action@v4`.
+- Documentation: enabling the repository Dependency Graph is now called
+  out as the fix for the `dependency-review` "not supported on this
+  repository" failure (it is a repository setting, not a workflow bug).
 - Docker image now runs as the unprivileged `node` user and ships a
   `HEALTHCHECK` against `/api/health/live`.
 - Docker Compose defaults `HEALTHCHECK_REQUIRE_STORAGE=0` so a fresh

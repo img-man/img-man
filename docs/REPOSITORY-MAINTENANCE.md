@@ -60,17 +60,22 @@ these in the GitHub UI (exact values in
    no force pushes, required reviews ≥ 1, require conversation
    resolution, require branches up to date, and the required status
    checks listed above.
-2. Create the `@img-man/maintainers` team if it does not exist (CODEOWNERS
+2. **Enable the Dependency Graph** (Settings → Code security → Dependency
+   graph). Without it, security.yml's `Dependency Review (PRs)` job fails
+   with "Dependency review is not supported on this repository" — that is
+   a missing-repository-setting problem, not a workflow bug. Do not delete
+   or downgrade the review step to silence it.
+3. Create the `@img-man/maintainers` team if it does not exist (CODEOWNERS
    references it; "require review from Code Owners" is useless without it).
-3. Docker Hub: create the `img-man` repository under the chosen namespace;
+4. Docker Hub: create the `img-man` repository under the chosen namespace;
    configure `DOCKERHUB_USERNAME` (variable) and `DOCKERHUB_TOKEN`
    (secret) under Settings → Secrets and variables → Actions.
-4. GHCR: after the first publish, set the `img-man` package visibility to
+5. GHCR: after the first publish, set the `img-man` package visibility to
    Public.
-5. Enable private vulnerability reporting (Settings → Security) —
+6. Enable private vulnerability reporting (Settings → Security) —
    SECURITY.md points reporters there.
-6. Repository description + topics (see GITHUB-REPOSITORY-SETUP.md).
-7. Actions general permissions (Settings → Actions → General):
+7. Repository description + topics (see GITHUB-REPOSITORY-SETUP.md).
+8. Actions general permissions (Settings → Actions → General):
    - Workflow permissions: **Read repository contents and packages
      permissions** (workflows declare their own elevated scopes).
    - Disable "Allow all repositories and organizations to access
