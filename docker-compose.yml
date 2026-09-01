@@ -17,12 +17,23 @@
 # reports healthy before a bucket exists; set it to 1 once storage is wired.
 #
 # Data: MongoDB persists in the named volume `imageman-mongo-data`.
+#
+# Two modes:
+#   Development / first local run (build from this checkout):
+#     docker compose up -d --build
+#   Self-hosting against published images (available from the first
+#   release tag onward):
+#     export IMAGEMAN_IMAGE=ghcr.io/img-man/img-man:latest   # or a pinned version
+#     docker compose pull app
+#     docker compose up -d
+#   In this mode no local build happens; remove --build and keep the env.
 services:
   app:
     build:
       context: .
       dockerfile: Dockerfile
-    image: imageman/imageman:local
+    # Override IMAGEMAN_IMAGE to run a published image instead of building.
+    image: ${IMAGEMAN_IMAGE:-imageman/imageman:local}
     depends_on:
       mongo:
         condition: service_healthy
@@ -37,6 +48,12 @@ services:
       MONGODB_URI: ${MONGODB_URI:-mongodb://mongo:27017/imageman}
       MONGODB_DB: ${MONGODB_DB:-imageman}
       HEALTHCHECK_REQUIRE_STORAGE: ${HEALTHCHECK_REQUIRE_STORAGE:-0}
+      # First-boot admin account. Leave unset ONLY for throwaway local
+      # evaluation — the app then seeds its published default credentials,
+      # which it immediately locks behind a forced change screen. Any host
+      # reachable by anyone else must set both values.
+      IMGMAN_BOOTSTRAP_EMAIL: ${IMGMAN_BOOTSTRAP_EMAIL:-}
+      IMGMAN_BOOTSTRAP_PASSWORD: ${IMGMAN_BOOTSTRAP_PASSWORD:-}
     ports:
       - '${IMAGEMAN_PORT:-3000}:3000'
     healthcheck:

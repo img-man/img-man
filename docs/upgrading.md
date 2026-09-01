@@ -79,8 +79,14 @@ isn't one.
 
 ## Upgrade cadence
 
-- **PATCH** — safe anytime, no expected downtime beyond container restart.
-- **MINOR** — test against a staging copy of your database first if you
-  depend on unusual features (AI providers, migrations, embed flows).
+There is no schema-migration framework (see "Before you upgrade"), so
+no bump type carries a *guarantee* — these are expectations:
+
+- **PATCH** — expected to be backward compatible and require nothing
+  beyond a restart; verify against a restored backup first if the
+  deployment matters.
+- **MINOR** — expected to be backward compatible; test against a staging
+  copy of your database first if you depend on unusual features (AI
+  providers, migrations, embed flows).
 - **MAJOR** — read docs, expect configuration work, plan a maintenance
   window.

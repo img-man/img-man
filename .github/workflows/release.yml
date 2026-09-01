@@ -1,8 +1,10 @@
 name: Release
 
-# Runs from version tags only (vMAJOR.MINOR.PATCH). `latest` is published
-# only from a successful, fully-validated stable release — never from
-# arbitrary main commits. See docs/releases.md.
+# Runs from version tags only (vMAJOR.MINOR.PATCH), and only for tag commits
+# that are reachable from `main` — a release must describe reviewed, merged
+# code, never an arbitrary commit. `latest` is published only from a
+# successful, fully-validated stable release; never from main commits.
+# See docs/releases.md.
 
 on:
   push:
@@ -16,17 +18,33 @@ permissions:
 
 env:
   GHCR_IMAGE: ghcr.io/img-man/img-man
+  # Shared BuildKit cache scope: the validation builds write to it and the
+  # final multi-arch publish reads from it, so only layer exports differ.
+  BUILDCACHE_SCOPE: release
 
 jobs:
   quality:
-    name: Validate before release
+    name: Validate source
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
+
+      # A release tag must point at a commit that is part of protected
+      # main. This blocks "tag a random WIP commit and publish it" and
+      # keeps the rule: merge to main → bump version → tag that commit.
+      - name: Verify tag commit is reachable from main
+        run: |
+          git fetch --no-tags origin +refs/heads/main:refs/remotes/origin/main
+          COMMIT="$(git rev-parse HEAD)"
+          if ! git merge-base --is-ancestor "$COMMIT" refs/remotes/origin/main; then
+            echo "::error::tag $GITHUB_REF_NAME points at $COMMIT, which is not an ancestor of origin/main — release tags must be created on merged main commits"
+            exit 1
+          fi
+          echo "tag commit $COMMIT is on main"
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 22
           cache: npm
@@ -51,6 +69,34 @@ jobs:
       - name: Verify SPDX headers
         run: npm run verify:spdx
 
+      # Lint is advisory because the repository carries 86 pre-existing
+      # React Compiler diagnostics (setState-in-effect, refs-during-render)
+      # from before the compiler was enabled — see the advisory-job comment
+      # in ci.yml. They are not release-blocking bugs, but NEW lint errors
+      # introduced since the baseline ARE blocking: this step compares the
+      # total error count against the baseline and fails above it.
+      # When the backlog is cleared: drop the comparison and run plain
+      # `npm run lint`, then make it required in ci.yml too.
+      - name: Lint (baseline-gated)
+        run: |
+          set +e
+          npm run lint > lint.log 2>&1
+          LINT_EXIT=$?
+          set -e
+          cat lint.log
+          ERRORS=$(grep -oE '\(([0-9]+) error' lint.log | tail -1 | grep -oE '[0-9]+')
+          ERRORS=${ERRORS:-0}
+          BASELINE=86
+          if [ "$ERRORS" -gt "$BASELINE" ]; then
+            echo "::error::lint has $ERRORS errors; baseline is $BASELINE — fix the $((ERRORS-BASELINE)) new ones before releasing"
+            exit 1
+          fi
+          if [ "$LINT_EXIT" -ne 0 ] && [ "$ERRORS" -eq 0 ]; then
+            echo "::error::eslint exited $LINT_EXIT without a parsable summary — investigate before releasing"
+            exit 1
+          fi
+          echo "lint OK: $ERRORS errors at or below baseline $BASELINE"
+
       - name: Type check
         run: npm run typecheck
 
@@ -69,13 +115,57 @@ jobs:
           name: sbom
           path: sbom.cdx.json
 
-  image:
-    name: Build, scan, publish container
+  security:
+    name: Security validation
     needs: quality
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Install Gitleaks
+        run: |
+          GITLEAKS_VERSION=8.30.1
+          GITLEAKS_SHA256=551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
+          curl -fsSLo /tmp/gitleaks.tar.gz \
+            "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          echo "${GITLEAKS_SHA256}  /tmp/gitleaks.tar.gz" | sha256sum -c -
+          tar -xzf /tmp/gitleaks.tar.gz -C /tmp
+          sudo mv /tmp/gitleaks /usr/local/bin/gitleaks
+          gitleaks version
+
+      # Release tags must be secret-clean across full history — a secret in
+      # an older merged commit still ends up inside the published source.
+      - name: Gitleaks full-history scan
+        run: gitleaks git --config .gitleaks.toml --redact
+
+      # Advisory, same documented policy as CI: the remaining high/critical
+      # npm advisories are unfixable transitives; see ci.yml. The new-critical
+      # case is blocked per-PR by dependency-review in security.yml, and the
+      # published image is hard-gated by Trivy in the image job. This step
+      # records the dependency state of the exact released source.
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: npm audit (advisory)
+        run: npm audit --audit-level=high
+        continue-on-error: true
+
+  image:
+    name: Build, validate, scan, publish container
+    needs: security
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
 
       - name: Compute image tags
         id: meta
@@ -96,42 +186,78 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      # Build locally (amd64 only) WITHOUT pushing, so the vulnerability scan
-      # and the container smoke test can run against the real artifact first.
-      - name: Build image for validation
+      # Both architectures are built, smoke-tested and scanned BEFORE any
+      # push. arm64 runs under QEMU emulation on the amd64 runner — that is
+      # an emulated runtime test, not physical-hardware testing; see
+      # docs/support-matrix.md.
+      - name: Build amd64 image (validate only)
         uses: docker/build-push-action@v6
         with:
           context: .
+          platforms: linux/amd64
           push: false
           load: true
-          tags: img-man:validated
+          tags: img-man:validated-amd64
+          cache-from: type=gha,scope=${{ env.BUILDCACHE_SCOPE }}
+          cache-to: type=gha,mode=max,scope=${{ env.BUILDCACHE_SCOPE }}
 
-      - name: Smoke test container
+      - name: Build arm64 image (validate only)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/arm64
+          push: false
+          load: true
+          tags: img-man:validated-arm64
+          cache-from: type=gha,scope=${{ env.BUILDCACHE_SCOPE }}
+          cache-to: type=gha,mode=max,scope=${{ env.BUILDCACHE_SCOPE }}
+
+      - name: Smoke test containers (both architectures)
         run: |
-          docker run -d --name imageman-release \
-            -e MONGODB_URI="mongodb://127.0.0.1:27017/img-man" \
-            -e NEXTAUTH_SECRET="release-smoke-secret" \
-            -p 3000:3000 img-man:validated
-          for i in $(seq 1 30); do
-            if curl -fsS http://127.0.0.1:3000/api/health/live >/dev/null; then
-              echo "liveness OK"
-              docker stop imageman-release
-              exit 0
-            fi
-            sleep 2
-          done
-          echo "::error::container did not become live"
-          docker logs imageman-release
-          exit 1
+          set -u
+          run_smoke() {
+            local tag="$1" platform="$2" attempts="$3"
+            docker rm -f imageman-release >/dev/null 2>&1 || true
+            docker run -d --name imageman-release --platform "$platform" \
+              -e MONGODB_URI="mongodb://127.0.0.1:27017/img-man" \
+              -e NEXTAUTH_SECRET="release-smoke-secret" \
+              -p 3000:3000 "$tag" >/dev/null
+            for i in $(seq 1 "$attempts"); do
+              if curl -fsS http://127.0.0.1:3000/api/health/live >/dev/null 2>&1; then
+                echo "$platform liveness OK"
+                docker rm -f imageman-release >/dev/null
+                return 0
+              fi
+              sleep 3
+            done
+            echo "::error::$platform container did not become live"
+            docker logs imageman-release 2>&1 || true
+            docker rm -f imageman-release >/dev/null
+            return 1
+          }
+          # amd64 runs natively; arm64 boots slower under QEMU emulation.
+          run_smoke img-man:validated-amd64 linux/amd64 40
+          run_smoke img-man:validated-arm64 linux/arm64 160
 
       # Publication policy: fail only on CRITICAL vulnerabilities that have a
       # fix available (--ignore-unfixed). Unfixable transitive advisories are
-      # triaged in SECURITY.md's dependency policy instead of hard-blocking
-      # every release. See docs/releases.md.
-      - name: Scan image for vulnerabilities
-        uses: aquasecurity/trivy-action@0.28.0
+      # triaged like the npm-audit backlog instead of hard-blocking every
+      # release. Both architectures are scanned. See docs/releases.md.
+      - name: Scan amd64 image
+        uses: aquasecurity/trivy-action@0.36.0
         with:
-          image-ref: img-man:validated
+          version: v0.74.0
+          image-ref: img-man:validated-amd64
+          format: table
+          exit-code: '1'
+          severity: CRITICAL
+          ignore-unfixed: true
+
+      - name: Scan arm64 image
+        uses: aquasecurity/trivy-action@0.36.0
+        with:
+          version: v0.74.0
+          image-ref: img-man:validated-arm64
           format: table
           exit-code: '1'
           severity: CRITICAL
@@ -152,8 +278,9 @@ jobs:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # Final multi-arch publish. GHA build cache makes this reuse the layers
-      # from the validation build.
+      # Final multi-arch publish. Layers are cache hits from the validation
+      # builds above (same `scope=release` GHA cache), so this run mainly
+      # exports manifests + attestations.
       - name: Build and push multi-arch image
         uses: docker/build-push-action@v6
         with:
@@ -164,8 +291,8 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           provenance: mode=max
           sbom: true
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=${{ env.BUILDCACHE_SCOPE }}
+          cache-to: type=gha,mode=max,scope=${{ env.BUILDCACHE_SCOPE }}
 
   release:
     name: Create GitHub Release
@@ -173,7 +300,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 

@@ -25,12 +25,15 @@ variables via your orchestrator. Never commit real values.
 
 | Variable | Required | Purpose |
 | --- | --- | --- |
-| `IMGMAN_BOOTSTRAP_EMAIL` | optional | Bootstrap admin email; empty = documented default |
-| `IMGMAN_BOOTSTRAP_PASSWORD` | optional | Bootstrap admin password; empty = documented default |
+| `IMGMAN_BOOTSTRAP_EMAIL` | **yes, unless localhost-only** | Bootstrap admin email; empty = the repo-published default |
+| `IMGMAN_BOOTSTRAP_PASSWORD` | **yes, unless localhost-only** | Bootstrap admin password; empty = the repo-published default |
 
-The bootstrap account always forces a credential change before the
-dashboard opens. Set both explicitly if the instance is reachable from
-anywhere but localhost.
+When both are unset the app seeds its **published default credentials**
+(documented in SETUP.md §4 — treat them as public). They are safe *only*
+because the account is locked behind a forced credential-change screen
+until replaced. The default exists for local evaluation; it is **not** a
+production credential — set both explicitly on any host reachable by
+anyone else. The seed runs once, and only on a genuinely empty database.
 
 ## Credential encryption
 

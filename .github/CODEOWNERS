@@ -11,6 +11,11 @@
 # would take precedence over the defaults below.
 #
 # The team must exist in the GitHub org before these entries are actionable.
+# Verified 2026-09: existence of @img-man/maintainers could not be confirmed
+# anonymously — until the org admin creates it, leave "Require review from
+# Code Owners" DISABLED in branch protection (see
+# docs/REPOSITORY-MAINTENANCE.md), or PRs will stall on approvals nobody
+# can give.
 
 # Default ownership
 * @img-man/maintainers

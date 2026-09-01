@@ -35,11 +35,20 @@ These already live in-repo and work without any admin action:
 Recommended **required checks** once branch protection is on
 (Settings → Branches → Branch protection rules → Require status checks):
 
-- `quality` (job in ci.yml — its check name is the job name)
-- `docker` (ci.yml)
-- `gitleaks` (security.yml)
-- `dependency-vulnerabilities` is advisory — do **not** require it yet
-- `dependency-review` (security.yml) — safe to require (fails only on new criticals)
+- `Build, Test, Coverage, Purity` (quality job in ci.yml)
+- `Docker Compose integration smoke` (ci.yml)
+- `Secret scan (Gitleaks)` (security.yml)
+- `Dependency review (PRs)` (security.yml) — safe to require (fails only on new criticals)
+- `Dependency audit (npm)` is advisory — do **not** require it yet
+
+**Code Owners enforcement:** `.github/CODEOWNERS` references
+`@img-man/maintainers`. Whether that team exists in the org cannot be
+verified from the repository — **do not enable "Require review from Code
+Owners"** (and do not rely on CODEOWNERS approvals) until the team is
+created and populated; otherwise GitHub treats the entries as no-owner
+paths and, with the setting on, PRs touching them can stall waiting for
+an approval that nobody can give. Plain required-reviewer counts work
+without the team.
 
 ## MANUAL GITHUB SETTINGS (maintainer TODO)
 

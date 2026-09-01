@@ -19,40 +19,46 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           # Full history is required for the scheduled/deep scan
           fetch-depth: 0
 
+      # Pinned version + digest so the scanner itself is deterministic.
+      # Bump intentionally (and keep release.yml in sync); Dependabot
+      # covers the actions, not this binary.
       - name: Install Gitleaks
         run: |
-          GITLEAKS_VERSION=8.21.2
+          GITLEAKS_VERSION=8.30.1
+          GITLEAKS_SHA256=551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
           curl -fsSLo /tmp/gitleaks.tar.gz \
             "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
-          echo "${GITLEAKS_VERSION}" > /tmp/gitleaks-version
+          echo "${GITLEAKS_SHA256}  /tmp/gitleaks.tar.gz" | sha256sum -c -
           tar -xzf /tmp/gitleaks.tar.gz -C /tmp
           sudo mv /tmp/gitleaks /usr/local/bin/gitleaks
           gitleaks version
 
-      # PRs: scan only the commits the PR introduces.
+      # PRs: scan only the commits the PR introduces. NOTE: --log-opts feeds
+      # `git log`, so the range must be a log spec ("--no-merges -p base..head").
+      # A `rev-list ...` string here would scan ZERO commits silently.
       - name: Scan pull request diff
         if: github.event_name == 'pull_request'
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
-          gitleaks detect \
+          gitleaks git \
             --config .gitleaks.toml \
             --redact \
-            --log-opts "rev-list --no-merges ${BASE_SHA}..${HEAD_SHA}"
+            --log-opts "--no-merges -p ${BASE_SHA}..${HEAD_SHA}"
 
-      # Pushes to main, weekly schedule: scan the full history. Any finding is
-      # uploaded as an artifact for triage; never printed in clear text
-      # (--redact above keeps secrets out of the log itself).
+      # Pushes to main, weekly schedule: scan the full history. Findings are
+      # uploaded as an artifact for triage; --redact keeps secret values out
+      # of the log.
       - name: Scan full history
         if: github.event_name != 'pull_request'
         run: |
-          gitleaks detect \
+          gitleaks git \
             --config .gitleaks.toml \
             --redact \
             --report-format sarif \
@@ -72,10 +78,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 22
           cache: npm
@@ -87,6 +93,7 @@ jobs:
       # transitive with no non-breaking fix (@auth/core via next-auth v4,
       # libvips via sharp, uuid via @google-cloud/storage). Same policy as the
       # advisory job in ci.yml; flip to blocking once the backlog is clear.
+      # NEW criticals introduced by a PR are blocked by dependency-review.
       - name: npm audit (high+)
         run: npm audit --audit-level=high
 
@@ -109,7 +116,7 @@ jobs:
       pull-requests: write
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       # Blocks a PR only when a newly added dependency brings a CRITICAL
       # advisory. Existing transitive highs are handled by the audit job.

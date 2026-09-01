@@ -127,5 +127,5 @@ roadmap-blockers.json
 gitleaks-report*.json
 trufflehog-report*.json
 
-
+# internal agent working notes, not part of the public repository
 agentDocs/

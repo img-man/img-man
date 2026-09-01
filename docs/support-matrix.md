@@ -31,8 +31,8 @@ continuously verified.
 
 | Platform | Status |
 | --- | --- |
-| linux/amd64 | **Published** (release pipeline, CI smoke test) |
-| linux/arm64 | Published via buildx/QEMU cross-build; **not yet runtime-tested** on physical arm64 — report issues if you hit any |
+| linux/amd64 | **Published**; smoke-tested natively (boot + liveness) and Trivy-scanned in CI and the release pipeline |
+| linux/arm64 | Published via buildx/QEMU cross-build; boot + liveness smoke-tested **under QEMU emulation**, Trivy-scanned. Not yet runtime-tested on physical arm64 hardware — report issues if you hit any |
 
 ## Host operating systems (running from source)
 

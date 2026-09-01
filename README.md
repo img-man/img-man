@@ -54,30 +54,33 @@ npm run dev                            # http://localhost:4000
 
 ### Docker Compose
 
-App + MongoDB, no manual config — good for trying it out:
+App + MongoDB, no manual config — good for trying it out locally:
 
 ```bash
 git clone https://github.com/img-man/img-man.git && cd img-man
 docker compose up -d --build           # http://localhost:3000
 ```
 
-First login: `admin@img-man.com` / `Admin@12345` — the app forces you to
-replace these before opening the dashboard.
+On first boot the app seeds a bootstrap admin and immediately locks it
+behind a **forced "Secure this deployment" credential change** — complete
+that screen before the dashboard opens. For anything beyond localhost
+evaluation, set `IMGMAN_BOOTSTRAP_EMAIL` and `IMGMAN_BOOTSTRAP_PASSWORD`
+in your environment first so the published defaults are never used
+([SETUP.md § 4](SETUP.md#4-first-login)).
 
 ### Docker image
 
-Release images are published to GHCR (and, once the maintainer configures a
-Docker Hub namespace, Docker Hub too) with tags `X.Y.Z`, `X.Y`, `X`,
-`latest`:
+Official images exist **from the first release tag (`v0.1.0`) onward** —
+before that, use the Compose build above. When available they are
+published to GHCR (and to Docker Hub if the maintainers configure a
+namespace there) with tags `X.Y.Z`, `X.Y`, `X`, and `latest` for stable
+releases:
 
 ```bash
-docker run --rm -p 3000:3000 -e MONGODB_URI="mongodb://host:27017/img-man" \
-  -e NEXTAUTH_SECRET="$(openssl rand -base64 32)" \
-  ghcr.io/img-man/img-man:latest
+export IMAGEMAN_IMAGE=ghcr.io/img-man/img-man:latest
+docker compose pull app
+docker compose up -d
 ```
-
-Availability of `ghcr.io/img-man/img-man:latest` starts with the first
-release tag; until then use the Compose path above.
 
 Full walkthrough: **[SETUP.md](SETUP.md)**.
 

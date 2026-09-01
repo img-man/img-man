@@ -37,44 +37,72 @@ The workflow refuses to run unless the tag equals `version` in
 2. Update `CHANGELOG.md`: move `## Unreleased` entries into a new
    `## [X.Y.Z] - YYYY-MM-DD` section.
 3. Bump `version` in `package.json` (root). Commit, PR, merge.
-4. Tag and push:
+4. Tag the merged `main` commit and push:
 
    ```bash
    git tag vX.Y.Z
    git push origin vX.Y.Z
    ```
 
-5. `release.yml` runs: quality gates → image build → smoke test →
-   vulnerability scan → publish → GitHub Release with notes.
+5. `release.yml` runs: quality gates → security validation → image build →
+   per-architecture smoke test → vulnerability scan → publish → GitHub
+   Release with notes.
 
-Any failed stage (purity, SPDX, typecheck, tests, build, smoke, scan)
-stops publication. A broken image is never published.
+Any failed stage stops publication. A broken image is never published.
 
-## CI checks before publication
+## Release rules
 
-From `release.yml`'s `quality` job, all blocking:
+- **Tags must point at `main`.** `release.yml` rejects a tag whose commit
+  is not reachable from `origin/main`. The only sanctioned flow is:
+  PR → reviewed merge to `main` → version bump → tag that exact `main`
+  commit.
+- The tag must equal `package.json` `version`, and the image, GitHub
+  Release, and SBOM all describe that same commit.
 
+## Quality gates before publication (`quality` job — all blocking)
+
+- Tag commit reachable from `main`
+- Tag equals `package.json` version
 - `npm run verify:public-purity`
 - `npm run verify:spdx`
+- `npm run lint` — **baseline-gated**: the 86 pre-existing React Compiler
+  diagnostics do not block (same backlog as CI's advisory job), but any
+  lint error above that baseline fails the release
 - `npm run typecheck`
 - `npm run test:coverage`
 - `npm run build`
 - `npm run sbom` (artifact, then attached to the Release)
 
-Note: `npm run lint` is advisory repo-wide until the pre-existing React
-Compiler backlog is resolved (see `ci.yml` comments); it does not gate
-releases either. Fix its backlog before making it a release gate.
+## Security validation (`security` job — blocking where it counts)
 
-## Container vulnerability scan policy
+- Gitleaks full-history secret scan of the tagged source (pinned version
+  + checksum). Blocking.
+- `npm audit` — advisory, same documented transitive backlog as CI; the
+  per-PR `dependency-review` gate (security.yml) is what prevents *new*
+  criticals, and a release tag cannot exist without its PR having passed
+  that gate on `main`. Dependency-review is not re-run on tags (no PR
+  diff exists there).
+- Trivy image scan of both architectures — see policy below. Blocking on
+  fixable CRITICALs.
 
-Trivy scans the built image before it is pushed:
+## Container build, validation, and scan policy
 
-- Fail the release only on **CRITICAL** findings that have a fix available
-  (`--ignore-unfixed`).
-- Unfixable transitive advisories are triaged like `npm audit` findings in
-  CI: tracked, mitigated where possible, documented in `SECURITY.md`.
-- Flip `ignore-unfixed: true` to `false` in `release.yml` once the
-  dependency backlog is clean.
+The `image` job builds **both** architectures without pushing, then for
+each of them:
+
+1. boots the container (native for amd64, QEMU-emulated for arm64 — an
+   emulated test, not physical-hardware proof) and waits on
+   `/api/health/live`;
+2. Trivy-scans the image.
+
+Publication policy: a scan fails the release only on **CRITICAL**
+vulnerabilities that have a fix available (`--ignore-unfixed`).
+Unfixable transitive advisories are triaged like the `npm audit` backlog.
+Flip `ignore-unfixed: true` to `false` once that backlog is clean.
+
+Only after both architectures pass does the job push the multi-arch
+manifest. The validation builds and the publish share one GHA BuildKit
+cache scope, so the publish step mostly re-exports layers.
 
 ## Required one-time GitHub configuration (manual)
 
