@@ -44,7 +44,7 @@ jobs:
           echo "tag commit $COMMIT is on main"
 
       - name: Set up Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -147,7 +147,7 @@ jobs:
       # published image is hard-gated by Trivy in the image job. This step
       # records the dependency state of the exact released source.
       - name: Set up Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
