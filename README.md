@@ -16,9 +16,15 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/img-man/img-man/actions/workflows/ci.yml"><img src="https://github.com/img-man/img-man/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI"></a>
+  <a href="https://github.com/img-man/img-man/releases"><img src="https://img.shields.io/github/v/release/img-man/img-man" alt="Latest release"></a>
   <img src="https://img.shields.io/badge/license-Apache--2.0-blue" alt="Apache 2.0">
   <img src="https://img.shields.io/badge/node-%3E%3D22-brightgreen" alt="Node 22+">
   <img src="https://img.shields.io/badge/self--hosted-yes-informational" alt="Self-hosted">
+</p>
+
+<p align="center">
+  <img src="public/screenshots/dashboard.svg" alt="img-man dashboard preview" width="800">
 </p>
 
 ---
@@ -35,13 +41,60 @@ provider key. There is no hosted tier to graduate into, no storage cap, and no
 usage meter — the dashboard shows what you have used, never what you are allowed
 to use.
 
+## Quick Start
+
+### From source
+
 ```bash
 git clone https://github.com/img-man/img-man.git && cd img-man
-npm install && cp .env.example .env   # add Mongo URI + GCS bucket
-npm run dev                           # http://localhost:4000
+npm install                            # requires Node.js 22+
+cp .env.example .env                   # add a MongoDB URI + storage bucket
+npm run dev                            # http://localhost:4000
 ```
 
+### Docker Compose
+
+App + MongoDB, no manual config — good for trying it out:
+
+```bash
+git clone https://github.com/img-man/img-man.git && cd img-man
+docker compose up -d --build           # http://localhost:3000
+```
+
+First login: `admin@img-man.com` / `Admin@12345` — the app forces you to
+replace these before opening the dashboard.
+
+### Docker image
+
+Release images are published to GHCR (and, once the maintainer configures a
+Docker Hub namespace, Docker Hub too) with tags `X.Y.Z`, `X.Y`, `X`,
+`latest`:
+
+```bash
+docker run --rm -p 3000:3000 -e MONGODB_URI="mongodb://host:27017/img-man" \
+  -e NEXTAUTH_SECRET="$(openssl rand -base64 32)" \
+  ghcr.io/img-man/img-man:latest
+```
+
+Availability of `ghcr.io/img-man/img-man:latest` starts with the first
+release tag; until then use the Compose path above.
+
 Full walkthrough: **[SETUP.md](SETUP.md)**.
+
+---
+
+## Trust
+
+- **Open source, Apache-2.0** — the full application, no crippleware, no
+  license keys. The [name and logo](TRADEMARK.md) are trademarked
+  separately.
+- **Self-hosted** — you run it; your database, your bucket, your AI keys.
+- **Your data stays yours** — assets go to storage you configure, AI calls
+  go to providers you enable with keys you supply.
+- **No phone-home** — the application makes no telemetry or
+  license-check callbacks, and no license enforcement will be added.
+- **Free CI/CD on public infrastructure** — GitHub Actions, GHCR, Docker
+  Hub; nothing in this project requires a paid service.
 
 ---
 
@@ -71,7 +124,10 @@ const { accessToken } = await fetch(`${IMAGEMAN_BASE_URL}/api/v1/auth/token`, {
 
 ```jsx
 // Your frontend — the entire client-side integration
-<iframe src={`${embedUrl}/embed/dashboard?token=${accessToken}`} />
+<iframe
+  src={`${embedUrl}/embed/dashboard?token=${accessToken}`}
+  allow="clipboard-write"
+/>
 ```
 
 An email img-man has not seen before is provisioned on its first token with the
@@ -204,6 +260,12 @@ degrades without a subscription.
 | | |
 | --- | --- |
 | [SETUP.md](SETUP.md) | Install, configure, first login, connect a client |
+| [docs/architecture.md](docs/architecture.md) | How the system is built |
+| [docs/configuration.md](docs/configuration.md) | Every environment variable |
+| [docs/support-matrix.md](docs/support-matrix.md) | Supported Node/DB/Docker/OS versions |
+| [docs/upgrading.md](docs/upgrading.md) | Upgrades, backups, rollback |
+| [docs/releases.md](docs/releases.md) | Release process and policies |
+| [CHANGELOG.md](CHANGELOG.md) | What changed in each version |
 | [customer-docs/INDEX.md](customer-docs/INDEX.md) | Full end-user documentation |
 | [customer-docs/api-reference.md](customer-docs/api-reference.md) | REST API |
 | [customer-docs/self-hosting.md](customer-docs/self-hosting.md) | Production deployment |

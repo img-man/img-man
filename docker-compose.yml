@@ -1,4 +1,22 @@
 # SPDX-License-Identifier: Apache-2.0
+#
+# img-man self-hosting stack: application + MongoDB.
+#
+#   docker compose up -d          → http://localhost:3000  (override: IMAGEMAN_PORT)
+#
+# Required env (set in shell or a .env file):
+#   NEXTAUTH_SECRET               → generate: openssl rand -base64 32
+#   ASSET_URL_SIGNING_SECRET      → generate: openssl rand -base64 32
+# The defaults below are PLACEHOLDERS for local evaluation only — never
+# ship them to an internet-facing host.
+#
+# Asset storage is bring-your-own-cloud (GCS/S3) and is NOT part of this
+# compose file; configure it after first login in Settings → Storage, or
+# via the GCP_*/AWS_* variables (see .env.example and docs/configuration.md).
+# HEALTHCHECK_REQUIRE_STORAGE=0 keeps readiness DB-only so a fresh stack
+# reports healthy before a bucket exists; set it to 1 once storage is wired.
+#
+# Data: MongoDB persists in the named volume `imageman-mongo-data`.
 services:
   app:
     build:
@@ -18,6 +36,7 @@ services:
       AUTH_TRUST_HOST: "true"
       MONGODB_URI: ${MONGODB_URI:-mongodb://mongo:27017/imageman}
       MONGODB_DB: ${MONGODB_DB:-imageman}
+      HEALTHCHECK_REQUIRE_STORAGE: ${HEALTHCHECK_REQUIRE_STORAGE:-0}
     ports:
       - '${IMAGEMAN_PORT:-3000}:3000'
     healthcheck:

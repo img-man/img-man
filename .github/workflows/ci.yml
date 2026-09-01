@@ -78,3 +78,42 @@ jobs:
       - name: npm audit (high+)
         continue-on-error: true
         run: npm audit --audit-level=high
+
+  # Blocking: the container image must at least build on every PR and on main.
+  # Multi-arch builds and pushes happen only in release.yml from version tags.
+  docker:
+    name: Docker build (verify only)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build image (no push)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          load: true
+          tags: img-man:ci
+
+      - name: Smoke test container
+        run: |
+          docker run -d --name imageman-smoke \
+            -e MONGODB_URI="mongodb://127.0.0.1:27017/img-man" \
+            -e NEXTAUTH_SECRET="smoke-test-secret" \
+            -p 3000:3000 img-man:ci
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:3000/api/health/live >/dev/null; then
+              echo "liveness OK"
+              docker inspect --format '{{.State.Running}}' imageman-smoke | grep -q true
+              docker stop imageman-smoke
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "::error::container did not become live"
+          docker logs imageman-smoke
+          exit 1

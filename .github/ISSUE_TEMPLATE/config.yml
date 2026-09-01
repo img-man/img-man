@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/img-man/img-man/security/advisories/new
+    about: Report security issues privately via GitHub security advisories — never through a public issue. See SECURITY.md.
+  - name: Setup & self-hosting guide
+    url: https://github.com/img-man/img-man/blob/main/SETUP.md
+    about: Install, configure, first login, Docker deployment.

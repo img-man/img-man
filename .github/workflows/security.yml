@@ -1,0 +1,120 @@
+name: Security
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  schedule:
+    # Full-history secret scan every Monday 03:00 UTC
+    - cron: '0 3 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  gitleaks:
+    name: Secret scan (Gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          # Full history is required for the scheduled/deep scan
+          fetch-depth: 0
+
+      - name: Install Gitleaks
+        run: |
+          GITLEAKS_VERSION=8.21.2
+          curl -fsSLo /tmp/gitleaks.tar.gz \
+            "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          echo "${GITLEAKS_VERSION}" > /tmp/gitleaks-version
+          tar -xzf /tmp/gitleaks.tar.gz -C /tmp
+          sudo mv /tmp/gitleaks /usr/local/bin/gitleaks
+          gitleaks version
+
+      # PRs: scan only the commits the PR introduces.
+      - name: Scan pull request diff
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          gitleaks detect \
+            --config .gitleaks.toml \
+            --redact \
+            --log-opts "rev-list --no-merges ${BASE_SHA}..${HEAD_SHA}"
+
+      # Pushes to main, weekly schedule: scan the full history. Any finding is
+      # uploaded as an artifact for triage; never printed in clear text
+      # (--redact above keeps secrets out of the log itself).
+      - name: Scan full history
+        if: github.event_name != 'pull_request'
+        run: |
+          gitleaks detect \
+            --config .gitleaks.toml \
+            --redact \
+            --report-format sarif \
+            --report-path gitleaks-report.sarif
+
+      - name: Upload scan report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gitleaks-report
+          path: gitleaks-report.sarif
+          if-no-files-found: ignore
+          retention-days: 14
+
+  dependency-vulnerabilities:
+    name: Dependency audit (npm)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Reported, not yet blocking. The remaining high/critical advisories are
+      # transitive with no non-breaking fix (@auth/core via next-auth v4,
+      # libvips via sharp, uuid via @google-cloud/storage). Same policy as the
+      # advisory job in ci.yml; flip to blocking once the backlog is clear.
+      - name: npm audit (high+)
+        run: npm audit --audit-level=high
+
+      - name: Generate SBOM artifact
+        run: npm run sbom
+
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: sbom.cdx.json
+          retention-days: 14
+
+  dependency-review:
+    name: Dependency review (PRs)
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      # Blocks a PR only when a newly added dependency brings a CRITICAL
+      # advisory. Existing transitive highs are handled by the audit job.
+      - name: Review new dependencies
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: critical
+          comment-summary-in-pr: always
