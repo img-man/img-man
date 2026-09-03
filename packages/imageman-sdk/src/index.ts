@@ -145,6 +145,29 @@ export class ImgManWidget {
         case 'imageman:error':
           this.config.onError?.(event.data.payload);
           break;
+        case 'imageman:clipboard-copy': {
+          const text = typeof event.data.text === 'string' ? event.data.text : '';
+          if (text) {
+            try {
+              if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text).catch(() => {});
+              } else {
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                ta.style.position = 'fixed';
+                ta.style.top = '-9999px';
+                document.body.appendChild(ta);
+                ta.focus();
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+              }
+            } catch {
+              // ignore
+            }
+          }
+          break;
+        }
       }
     };
     window.addEventListener('message', this.messageHandler);
