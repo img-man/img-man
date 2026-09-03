@@ -3,15 +3,17 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import {
- Images,
- HardDrive,
- Users,
- Activity,
- ChevronDown,
- Folder,
- Eye,
- Sparkles,
+  Images,
+  HardDrive,
+  Users,
+  Activity,
+  ChevronDown,
+  Folder,
+  Eye,
+  Sparkles,
 } from 'lucide-react';
+import { useRole } from '@/components/dashboard/role-context';
+import { ROLE_LEVEL } from '@/lib/permissions';
 
 /* ─── Types ─────────────────────────────────────────────────── */
 
@@ -44,10 +46,16 @@ interface DashboardStats {
 /* ─── Helpers ───────────────────────────────────────────────── */
 
 function formatStorageSize(bytes: number): string {
- if (bytes === 0) return '0 B';
- const units = ['B', 'KB', 'MB', 'GB', 'TB'];
- const i = Math.floor(Math.log(bytes) / Math.log(1024));
- return `${(bytes / Math.pow(1024, i)).toFixed(i > 0 ? 1 : 0)} ${units[i]}`;
+  if (bytes === 0) return '0 B';
+  const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(1024));
+  return `${(bytes / Math.pow(1024, i)).toFixed(i > 0 ? 1 : 0)} ${units[i]}`;
+}
+
+function isFolderUnderRule(folderPath: string, rulePath: string): boolean {
+  if (rulePath === '/' || rulePath === '') return true;
+  if (folderPath === rulePath) return true;
+  return folderPath.startsWith(rulePath.endsWith('/') ? rulePath : `${rulePath}/`);
 }
 
 /* ─── Props ─────────────────────────────────────────────────── */
@@ -78,85 +86,138 @@ export function EmbedDashboardOverview({
  const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(null);
  const [loading, setLoading] = useState(true);
 
- // Fetch folder-level stats for all accessible folders
- useEffect(() => {
- const authHeaders: HeadersInit = authToken
- ? { Authorization: `Bearer ${authToken}` }
- : {};
- async function fetchStats() {
- setLoading(true);
- try {
- // Fetch folders to map paths → IDs
- const [foldersRes, aiJobsRes] = await Promise.all([
- fetch('/api/v1/folders', { headers: authHeaders }),
- fetch('/api/v1/ai/jobs?limit=1', { headers: authHeaders }),
- ]);
- const foldersData = await foldersRes.json();
- const allFolders = foldersData.folders ?? [];
- const aiData = aiJobsRes.ok ? await aiJobsRes.json() : {};
- const totalAiJobs = aiData.pagination?.total ?? 0;
+  const { role } = useRole();
 
- // Map access rules to folder stats
- const stats: FolderStat[] = [];
- for (const rule of accessRules) {
- if (rule.resourceType !== 'folder') continue;
- // Find folder by path
- const folder = allFolders.find(
- (f: { path: string; _id: string; name: string }) => f.path === rule.path,
- );
- if (!folder) continue;
+  // Fetch folder-level stats for all accessible folders
+  useEffect(() => {
+  const authHeaders: HeadersInit = authToken
+  ? { Authorization: `Bearer ${authToken}` }
+  : {};
+  async function fetchStats() {
+  setLoading(true);
+  try {
+  // Fetch folders, ai jobs and global asset stats (for fallback)
+  const [foldersRes, aiJobsRes, globalAssetsRes] = await Promise.all([
+  fetch('/api/v1/folders', { headers: authHeaders }),
+  fetch('/api/v1/ai/jobs?limit=1', { headers: authHeaders }),
+  fetch('/api/v1/assets?limit=0&includeStats=true', { headers: authHeaders }),
+  ]);
+  const foldersData = foldersRes.ok ? await foldersRes.json() : {};
+  const allFolders: { _id: string; name: string; path: string; accessMode?: string }[] = foldersData.folders ?? [];
+  const aiData = aiJobsRes.ok ? await aiJobsRes.json() : {};
+  const totalAiJobs = aiData.pagination?.total ?? 0;
+  const globalAssetsData = globalAssetsRes.ok ? await globalAssetsRes.json() : {};
+  const globalTotal = globalAssetsData.total ?? 0;
+  const globalSizeBytes = globalAssetsData.totalSizeBytes ?? 0;
 
- // Fetch asset count + aggregate sizeBytes for that folder
- try {
- const assetsRes = await fetch(
- `/api/v1/assets?folderId=${folder._id}&limit=0&includeStats=true`,
- { headers: authHeaders },
- );
- const assetsData = await assetsRes.json();
- stats.push({
- folderId: folder._id,
- name: folder.name,
- path: rule.path,
- role: rule.role,
- assetCount: assetsData.total ?? assetsData.assets?.length ?? 0,
- totalSizeBytes: assetsData.totalSizeBytes ?? 0,
- recentUploads: 0,
- shareCount: 0,
- });
- } catch {
- stats.push({
- folderId: folder._id,
- name: folder.name,
- path: rule.path,
- role: rule.role,
- assetCount: 0,
- totalSizeBytes: 0,
- recentUploads: 0,
- shareCount: 0,
- });
- }
- }
+  // Determine which folders are accessible
+  let accessibleFolders: typeof allFolders = [];
+  if (accessRules.length === 0) {
+  // No explicit rules: owner/admin sees all, otherwise only flexible folders
+  const level = (ROLE_LEVEL as Record<string, number>)[role] ?? 0;
+  if (level >= 3) {
+  accessibleFolders = allFolders;
+  } else {
+  accessibleFolders = allFolders.filter((f) => (f.accessMode ?? 'flexible') !== 'restricted');
+  // Fallback: if filtering yields 0 but folders exist (e.g. accessMode missing), show all
+  if (accessibleFolders.length === 0 && allFolders.length > 0) {
+  accessibleFolders = allFolders;
+  }
+  }
+  } else {
+  const seen = new Set<string>();
+  for (const rule of accessRules) {
+  if (rule.resourceType !== 'folder') continue;
+  for (const folder of allFolders) {
+  if (isFolderUnderRule(folder.path, rule.path) && !seen.has(folder._id)) {
+  seen.add(folder._id);
+  accessibleFolders.push(folder);
+  }
+  }
+  }
+  // If prefix matching yielded nothing (stale paths), fall back to exact match
+  if (accessibleFolders.length === 0) {
+  for (const rule of accessRules) {
+  if (rule.resourceType !== 'folder') continue;
+  const folder = allFolders.find((f) => f.path === rule.path);
+  if (folder && !seen.has(folder._id)) {
+  seen.add(folder._id);
+  accessibleFolders.push(folder);
+  }
+  }
+  }
+  }
 
- setFolderStats(stats);
+  // Build a map rulePath+role for display: longest matching rule wins
+  function roleForFolder(folderPath: string): string {
+  let bestRole = 'viewer';
+  let bestLen = -1;
+  for (const r of accessRules) {
+  if (r.resourceType !== 'folder') continue;
+  if (isFolderUnderRule(folderPath, r.path) && r.path.length > bestLen) {
+  bestLen = r.path.length;
+  bestRole = r.role;
+  }
+  }
+  if (bestLen === -1 && accessRules.length === 0) return role ?? 'viewer';
+  return bestRole;
+  }
 
- // Aggregate dashboard stats
- setDashboardStats({
- totalAssets: stats.reduce((sum, s) => sum + s.assetCount, 0),
- totalSizeBytes: stats.reduce((sum, s) => sum + s.totalSizeBytes, 0),
- totalFolders: stats.length,
- recentUploads: stats.reduce((sum, s) => sum + s.recentUploads, 0),
- aiJobsRun: totalAiJobs,
- totalShares: stats.reduce((sum, s) => sum + s.shareCount, 0),
- });
- } catch (err) {
- console.error('[EmbedDashboard] Failed to fetch stats:', err);
- } finally {
- setLoading(false);
- }
- }
+  // Fetch per-folder stats
+  const stats: FolderStat[] = [];
+  for (const folder of accessibleFolders) {
+  try {
+  const assetsRes = await fetch(
+  `/api/v1/assets?folderId=${folder._id}&limit=0&includeStats=true`,
+  { headers: authHeaders },
+  );
+  const assetsData = assetsRes.ok ? await assetsRes.json() : {};
+  stats.push({
+  folderId: folder._id,
+  name: folder.name,
+  path: folder.path,
+  role: roleForFolder(folder.path),
+  assetCount: assetsData.total ?? assetsData.assets?.length ?? 0,
+  totalSizeBytes: assetsData.totalSizeBytes ?? 0,
+  recentUploads: 0,
+  shareCount: 0,
+  });
+  } catch {
+  stats.push({
+  folderId: folder._id,
+  name: folder.name,
+  path: folder.path,
+  role: roleForFolder(folder.path),
+  assetCount: 0,
+  totalSizeBytes: 0,
+  recentUploads: 0,
+  shareCount: 0,
+  });
+  }
+  }
 
- fetchStats();
- }, [accessRules, authToken]);
+  setFolderStats(stats);
+
+  // Aggregate dashboard stats — fall back to global org totals when per-folder sums are 0
+  const summedAssets = stats.reduce((sum, s) => sum + s.assetCount, 0);
+  const summedSize = stats.reduce((sum, s) => sum + s.totalSizeBytes, 0);
+  setDashboardStats({
+  totalAssets: summedAssets || globalTotal,
+  totalSizeBytes: summedSize || globalSizeBytes,
+  totalFolders: stats.length || allFolders.length,
+  recentUploads: stats.reduce((sum, s) => sum + s.recentUploads, 0),
+  aiJobsRun: totalAiJobs,
+  totalShares: stats.reduce((sum, s) => sum + s.shareCount, 0),
+  });
+  } catch (err) {
+  console.error('[EmbedDashboard] Failed to fetch stats:', err);
+  } finally {
+  setLoading(false);
+  }
+  }
+
+  fetchStats();
+  }, [accessRules, authToken, role]);
 
  // Current stats based on selection
  const currentStats = useMemo(() => {
