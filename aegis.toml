@@ -1,0 +1,15 @@
+[project]
+id = "01a158dd-ed78-77b6-b9be-bebed81fcd70"
+name = "img-man"
+
+[build]
+install_command = "npm ci"
+build_command = "npm run build"
+start_command = "npx next start -p $PORT"
+
+[deploy]
+port = 4000
+health_check_url = "http://127.0.0.1:4000/api/health"
+health_check_timeout_secs = 120
+drain_timeout_secs = 20
+max_retained_versions = 3
