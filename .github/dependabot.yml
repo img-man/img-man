@@ -14,6 +14,13 @@ updates:
           - patch
         patterns:
           - '*'
+    # TypeScript majors (7.x is a new compiler) are adopted deliberately, not by
+    # bot PRs. @types/node must match the Node runtime in production (24.x).
+    ignore:
+      - dependency-name: typescript
+        update-types: ['version-update:semver-major']
+      - dependency-name: '@types/node'
+        versions: ['>= 25']
     commit-message:
       prefix: chore(deps)
 
@@ -24,6 +31,13 @@ updates:
       day: monday
       time: '04:00'
     open-pull-requests-limit: 3
+    # TypeScript majors (7.x is a new compiler) are adopted deliberately, not by
+    # bot PRs. @types/node must match the Node runtime in production (24.x).
+    ignore:
+      - dependency-name: typescript
+        update-types: ['version-update:semver-major']
+      - dependency-name: '@types/node'
+        versions: ['>= 25']
     commit-message:
       prefix: chore(deps)
 
@@ -34,6 +48,13 @@ updates:
       day: monday
       time: '04:00'
     open-pull-requests-limit: 3
+    # TypeScript majors (7.x is a new compiler) are adopted deliberately, not by
+    # bot PRs. @types/node must match the Node runtime in production (24.x).
+    ignore:
+      - dependency-name: typescript
+        update-types: ['version-update:semver-major']
+      - dependency-name: '@types/node'
+        versions: ['>= 25']
     commit-message:
       prefix: chore(deps)
 
